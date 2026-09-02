@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Ars Technica</title>
+    <link>https://arstechnica.com</link>
+    <item>
+      <title>Rust 1.90 lands with faster incremental builds - Ars Technica</title>
+      <link>https://arstechnica.com/2026/08/rust-190/</link>
+      <pubDate>Sat, 30 Aug 2026 17:30:00 +0000</pubDate>
+      <description>The release cuts rebuild times.</description>
+    </item>
+    <item>
+      <title>Chip maker posts a rec

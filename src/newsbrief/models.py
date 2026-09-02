@@ -98,6 +98,8 @@ class RawItem:
     author: str | None = None
     source_name: str | None = None
     published_at: datetime | None = None
+    canonical_url: str | None = None
+    """Set only by adapters whose `url` is a redirect, notably google_news."""
 
 
 @dataclass(slots=True)

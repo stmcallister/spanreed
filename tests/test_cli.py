@@ -51,10 +51,20 @@ def test_unknown_command_fails(capsys: pytest.CaptureFixture[str]) -> None:
 
 
 @pytest.mark.parametrize("command", COMMANDS)
-def test_known_commands_migrate_then_report_the_missing_phase(command: str, tmp_path: Path) -> None:
+def test_known_commands_run_migrations_first(command: str, tmp_path: Path) -> None:
     """Each command runs migrations before dispatching, even while stubbed."""
-    assert main([command]) == 1
+    main([command])
     assert (tmp_path / "newsbrief.db").exists()
+
+
+def test_collect_succeeds_with_no_sources_configured() -> None:
+    """An empty database is not an error, it is just a quiet run."""
+    assert main(["collect"]) == 0
+
+
+@pytest.mark.parametrize("command", ["compose", "web"])
+def test_unimplemented_phases_still_report_themselves(command: str) -> None:
+    assert main([command]) == 1
 
 
 def test_a_broken_database_path_exits_one(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:

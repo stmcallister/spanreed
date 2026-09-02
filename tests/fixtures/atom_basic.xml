@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Midlakes United</title>
+  <link href="https://midlakesunited.example/"/>
+  <updated>2026-08-31T12:00:00Z</updated>
+  <entry>
+    <title>Squad news ahead of Saturday</title>
+    <link rel="alternate" href="https://midlakesunited.example/news/squad-news"/>
+    <id>tag:midlakesunited.example,2026:news/squad-news</id>
+    <updated>2026-08-31T11:45:00Z</updated>
+    <author><name>Club Press Office</name></author>
+    <summary type="html">&lt;p&gt;Two players return to training.&lt;/p&gt;</summary>
+  </entry>
+  <entry>
+    <title>Ticket ballot opens Monday</title>
+    <link rel="alternate" href="https://midlakesunited.example/news/ticket-ballot"/>
+    <id>tag:midlakesunited.example,2026:news/ticket-ballot</id>
+    <updated>2026-08-30T08:00:00Z</updated>
+    <summary>Members get first access.</summary>
+  </entry>
+</feed>

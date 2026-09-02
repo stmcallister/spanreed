@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Ars Technica</title>
+    <link>https://arstechnica.com</link>
+    <description>Serving the technologist</description>
+    <item>
+      <title>Rust 1.90 lands with faster incremental builds - Ars Technica</title>
+      <link>https://arstechnica.com/2026/08/rust-190/</link>
+      <guid>https://arstechnica.com/2026/08/rust-190/</guid>
+      <pubDate>Sat, 30 Aug 2026 17:30:00 +0000</pubDate>
+      <dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Dana Vance</dc:creator>
+      <description>&lt;p&gt;The release &lt;em&gt;cuts&lt;/em&gt; rebuild times.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Chip maker posts a record quarter</title>
+      <link>https://arstechnica.com/2026/08/record-quarter/</link>
+      <guid>https://arstechnica.com/2026/08/record-quarter/</guid>
+      <description>No date on this one, which is common enough.</description>
+    </item>
+    <item>
+      <title>An article from years ago</title>
+      <link>https://arstechnica.com/2019/01/old-news/</link>
+      <guid>https://arstechnica.com/2019/01/old-news/</guid>
+      <pubDate>Tue, 15 Jan 2019 09:00:00 +0000</pubDate>
+      <description>Well outside any lookback window.</description>
+    </item>
+  </channel>
+</rss>

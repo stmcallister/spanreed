@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:media="http://search.yahoo.com/mrss/" version="2.0">
+  <channel>
+    <generator>NFE/5.0</generator>
+    <title>"Midlakes United" -realty when:1d - Google News</title>
+    <link>https://news.google.com/search?q=%22Midlakes+United%22</link>
+    <language>en-US</language>
+    <item>
+      <title>Midlakes United sign a goalkeeper on loan - The Athletic</title>
+      <link>https://news.google.com/rss/articles/CBMiK2h0dHBzOi8vZXhhbXBsZS5jb20vZ29hbGtlZXBlcg?oc=5</link>
+      <guid isPermaLink="false">CBMiK2h0dHBz</guid>
+      <pubDate>Mon, 31 Aug 2026 14:02:00 GMT</pubDate>
+      <description>&lt;a href="https://news.google.com/rss/articles/CBMiK2h0dHBz?oc=5"&gt;Midlakes United sign a goalkeeper on loan&lt;/a&gt;&amp;nbsp;&amp;nbsp;&lt;font color="#6f6f6f"&gt;The Athletic&lt;/font&gt;</description>
+      <source url="https://theathletic.com">The Athletic</source>
+    </item>
+    <item>
+      <title>Match report: Midlakes United 2, Harbour City 1 - Local Herald</title>
+      <link>https://news.google.com/rss/articles/CBMiL2h0dHBzOi8vZXhhbXBsZS5jb20vbWF0Y2gtcmVwb3J0?oc=5</link>
+      <guid isPermaLink="false">CBMiL2h0dHBz</guid>
+      <pubDate>Mon, 31 Aug 2026 06:30:00 GMT</pubDate>
+      <description>&lt;a href="https://news.google.com/rss/articles/CBMiL2h0dHBz?oc=5"&gt;Match report&lt;/a&gt;</description>
+      <source url="https://localherald.example">Local Herald</source>
+    </item>
+    <item>
+      <title>Midlakes United announce a stadium naming deal - Harbour Business</title>
+      <link>https://news.google.com/rss/articles/CBMiM2h0dHBzOi8vZXhhbXBsZS5jb20vbmFtaW5nLWRlYWw?oc=5</link>
+      <guid isPermaLink="false">CBMiM2h0dHBz</guid>
+      <pubDate>Sun, 30 Aug 2026 22:10:00 GMT</pubDate>
+      <description>&lt;a href="https://news.google.com/rss/articles/CBMiM2h0dHBz?oc=5"&gt;Stadium naming deal&lt;/a&gt;</description>
+      <source url="https://harbourbusiness.example">Harbour Business</source>
+    </item>
+  </channel>
+</rss>
