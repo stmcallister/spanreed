@@ -60,6 +60,7 @@ The collector runs on a schedule independent of the brief so that news arriving 
 | Web framework | `FastAPI` | Serves both the UI and a small JSON API |
 | Templating | `Jinja2` + `HTMX` | No npm, no build step, no bundler in the image |
 | Styling | Pico.css, vendored | One file, looks fine, zero tooling |
+| Markdown rendering | `markdown-it-py` | The `briefs.html` column needs a renderer and the stdlib has none |
 | DB access | `sqlite3` stdlib | The schema is small and SQL is clearer here than an ORM |
 | Migrations | Numbered `.sql` files | Applied in order at startup, tracked in a `schema_version` table |
 | LLM | `anthropic` SDK | See the LLM section |

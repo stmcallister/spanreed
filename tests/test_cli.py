@@ -62,9 +62,14 @@ def test_collect_succeeds_with_no_sources_configured() -> None:
     assert main(["collect"]) == 0
 
 
-@pytest.mark.parametrize("command", ["compose", "web"])
-def test_unimplemented_phases_still_report_themselves(command: str) -> None:
-    assert main([command]) == 1
+def test_compose_succeeds_with_an_empty_database(capsys: pytest.CaptureFixture[str]) -> None:
+    """No items is a quiet day, not a failure. A brief is still produced."""
+    assert main(["compose"]) == 0
+    assert "Nothing to report today." in capsys.readouterr().out
+
+
+def test_the_web_ui_still_reports_that_it_is_unimplemented() -> None:
+    assert main(["web"]) == 1
 
 
 def test_a_broken_database_path_exits_one(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
