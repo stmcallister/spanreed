@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}newsbrief{% endblock %}</title>
   <link rel="stylesheet" href="/static/pico.min.css">
+  <link rel="alternate" type="application/rss+xml" title="newsbrief" href="/feed.xml">
   <script src="/static/htmx.min.js" defer></script>
   <style>
     :root { --pico-font-size: 95%; }
@@ -38,6 +39,7 @@
       <li><a href="/" {% if active == 'topics' %}class="active"{% endif %}>Topics</a></li>
       <li><a href="/health" {% if active == 'health' %}class="active"{% endif %}>Source health</a></li>
       <li><a href="/briefs" {% if active == 'briefs' %}class="active"{% endif %}>Briefs</a></li>
+      <li><a href="/feed.xml">Feed</a></li>
     </ul>
   </nav>
   {% block content %}{% endblock %}

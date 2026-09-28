@@ -138,6 +138,30 @@ at once is safe.
 
 ---
 
+## Delivery
+
+Three ways out, in this order:
+
+1. **Archive**, always. The brief is written to the database before anything
+   else is attempted, so a delivery that fails costs a delivery and never a
+   brief.
+2. **Email**, only when SMTP is configured. Unconfigured is a normal state and
+   the composer says so once at INFO. Port 465 is treated as implicit TLS,
+   anything else tries STARTTLS and carries on unencrypted with a warning if
+   the server does not offer it. `SMTP_TO` may name several addresses,
+   separated by commas.
+3. **RSS** at `/feed.xml`, carrying the last 30 briefs.
+
+The feed sits behind the same basic auth as the rest of the UI, because it
+carries the whole brief rather than a link to it. Readers that accept a
+credential in the URL can subscribe:
+
+```
+https://newsbrief:PASSWORD@newsbrief.kholinar.ts.net/feed.xml
+```
+
+---
+
 ## Recovering the database
 
 The PVC is `local-path`, which means it is a directory on one node and it is

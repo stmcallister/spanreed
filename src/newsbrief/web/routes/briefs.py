@@ -13,6 +13,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 
 from newsbrief.compose.pipeline import brief_date_for, compose
+from newsbrief.deliver import feed
 from newsbrief.web import repo
 from newsbrief.web.deps import Config, Conn, templates
 
@@ -27,6 +28,19 @@ def list_briefs(request: Request, conn: Conn, settings: Config) -> Response:
         request,
         "briefs/list.html",
         {"briefs": repo.brief_dates(conn), "timezone": settings.render_timezone},
+    )
+
+
+@router.get("/feed.xml")
+def brief_feed(request: Request, conn: Conn) -> Response:
+    """The archive as RSS.
+
+    Behind the same basic auth as everything else, because it carries the whole
+    brief. Readers that support a credential in the URL can subscribe to it.
+    """
+    return Response(
+        content=feed.build(repo.recent_briefs(conn, feed.MAX_FEED_ITEMS), str(request.base_url)),
+        media_type="application/rss+xml",
     )
 
 

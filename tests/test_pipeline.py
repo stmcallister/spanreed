@@ -301,3 +301,81 @@ def test_purging_keeps_the_briefs(populated: sqlite3.Connection, offline: Settin
     pipeline.purge_old_items(stub, NOW + timedelta(days=365), offline.item_retention_days)
 
     assert stub.execute("SELECT COUNT(*) AS n FROM items").fetchone()["n"] == 0
+
+
+# --- delivery ---------------------------------------------------------------
+
+
+def test_the_brief_is_emailed_after_it_is_archived(
+    populated: sqlite3.Connection, offline: Settings, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from newsbrief.deliver import email as email_module
+
+    sent: list[dict[str, object]] = []
+
+    def record(settings: Settings, **kwargs: object) -> email_module.DeliveryResult:
+        # The brief must already be in the database by the time this runs.
+        stored = populated.execute("SELECT COUNT(*) AS n FROM briefs").fetchone()["n"]
+        sent.append({**kwargs, "briefs_already_archived": stored})
+        return email_module.DeliveryResult(status="sent")
+
+    monkeypatch.setattr(email_module, "send", record)
+    stub_llm(monkeypatch, StubLlm())
+
+    pipeline.compose(populated, offline, NOW)
+
+    assert len(sent) == 1
+    assert sent[0]["briefs_already_archived"] == 1
+    assert sent[0]["brief_date"] == "2026-09-01"
+    assert sent[0]["degraded"] is False
+    assert "<h2>" in str(sent[0]["html"])
+
+
+def test_a_failed_delivery_does_not_lose_the_brief(
+    populated: sqlite3.Connection, offline: Settings, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Archive first, then email. That ordering is the whole point."""
+    from newsbrief.deliver import email as email_module
+
+    def explode(settings: Settings, **kwargs: object) -> email_module.DeliveryResult:
+        return email_module.DeliveryResult(status="failed", error="connection refused")
+
+    monkeypatch.setattr(email_module, "send", explode)
+    stub_llm(monkeypatch, StubLlm())
+
+    markdown, brief_id = pipeline.compose(populated, offline, NOW)
+
+    assert markdown
+    row = populated.execute("SELECT * FROM briefs WHERE id = ?", (brief_id,)).fetchone()
+    assert row["item_count"] > 0
+
+
+def test_a_degraded_brief_is_flagged_to_the_mailer(
+    populated: sqlite3.Connection, offline: Settings, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from newsbrief.deliver import email as email_module
+
+    seen: list[object] = []
+
+    def record(settings: Settings, **kwargs: object) -> email_module.DeliveryResult:
+        seen.append(kwargs["degraded"])
+        return email_module.DeliveryResult(status="skipped")
+
+    monkeypatch.setattr(email_module, "send", record)
+    stub_llm(monkeypatch, None)
+
+    pipeline.compose(populated, offline, NOW)
+
+    assert seen == [True]
+
+
+def test_an_unconfigured_mailer_is_simply_skipped(
+    populated: sqlite3.Connection, offline: Settings, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """No SMTP settings in the test fixture, so this exercises the real path."""
+    stub_llm(monkeypatch, StubLlm())
+
+    assert offline.smtp_configured is False
+    markdown, _ = pipeline.compose(populated, offline, NOW)
+
+    assert markdown

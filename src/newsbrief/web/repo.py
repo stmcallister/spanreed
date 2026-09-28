@@ -257,6 +257,14 @@ def brief_dates(conn: sqlite3.Connection, limit: int = 90) -> list[Brief]:
     ]
 
 
+def recent_briefs(conn: sqlite3.Connection, limit: int) -> list[Brief]:
+    """Whole briefs, HTML included, newest first. For the feed."""
+    return [
+        Brief.from_row(row)
+        for row in conn.execute("SELECT * FROM briefs ORDER BY brief_date DESC LIMIT ?", (limit,))
+    ]
+
+
 def get_brief(conn: sqlite3.Connection, brief_date: str) -> Brief | None:
     row = conn.execute("SELECT * FROM briefs WHERE brief_date = ?", (brief_date,)).fetchone()
     return None if row is None else Brief.from_row(row)

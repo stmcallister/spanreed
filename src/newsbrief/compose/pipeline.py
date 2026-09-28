@@ -139,7 +139,7 @@ def _write_body(
 
 def compose(conn: sqlite3.Connection, settings: Settings, now: datetime) -> tuple[str, int]:
     """Run the four stages and archive the result. Returns the markdown and brief id."""
-    from newsbrief.deliver import archive
+    from newsbrief.deliver import archive, email
 
     notes: list[str] = []
 
@@ -168,17 +168,31 @@ def compose(conn: sqlite3.Connection, settings: Settings, now: datetime) -> tupl
     markdown = body + "\n" + write.render_footer(recent_failures(conn, now), notes)
     usage = client.usage if client is not None else None
 
+    brief_date = brief_date_for(now, settings.render_timezone)
+    degraded = filter_degraded or write_degraded
+
     brief_id = archive.save(
         conn,
-        brief_date=brief_date_for(now, settings.render_timezone),
+        brief_date=brief_date,
         generated_at=db.to_iso_utc(now),
         markdown=markdown,
         selected=selected,
         model=model,
         input_tokens=usage.input_tokens if usage else None,
         output_tokens=usage.output_tokens if usage else None,
-        degraded=filter_degraded or write_degraded,
+        degraded=degraded,
         notes="; ".join(notes) or None,
+    )
+
+    # Archive first, then email. The brief is safe in the database before any
+    # delivery is attempted, so a mail server that is down costs a delivery and
+    # never a brief. `send` does not raise.
+    email.send(
+        settings,
+        brief_date=brief_date,
+        markdown=markdown,
+        html=archive.render_html(markdown),
+        degraded=degraded,
     )
     return markdown, brief_id
 
