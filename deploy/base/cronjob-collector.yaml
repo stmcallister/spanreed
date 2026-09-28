@@ -1,0 +1,72 @@
+# Fetch every enabled source, every three hours.
+#
+# The collector runs on its own schedule rather than as part of the brief so
+# that news arriving at 2pm is captured at 3pm. A single overnight fetch that
+# fails takes the whole morning's brief with it.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: newsbrief-collector
+  labels:
+    app.kubernetes.io/name: newsbrief
+    app.kubernetes.io/component: collector
+spec:
+  schedule: "0 */3 * * *"
+  timeZone: "America/Los_Angeles"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      # Without this a hung feed leaves the pod running until the next
+      # schedule, and with Forbid that silently skips runs.
+      activeDeadlineSeconds: 900
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: newsbrief
+            app.kubernetes.io/component: collector
+        spec:
+          restartPolicy: Never
+          nodeSelector:
+            newsbrief.stmcallister.dev/data-node: "true"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+          containers:
+            - name: collect
+              image: ghcr.io/stmcallister/newsbrief:latest
+              imagePullPolicy: IfNotPresent
+              command: ["python", "-m", "newsbrief"]
+              args: ["collect"]
+              envFrom:
+                - configMapRef:
+                    name: newsbrief-config
+                - secretRef:
+                    name: newsbrief-secrets
+              volumeMounts:
+                - name: data
+                  mountPath: /data
+                - name: tmp
+                  mountPath: /tmp
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 128Mi
+                limits:
+                  cpu: 1000m
+                  memory: 512Mi
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+          volumes:
+            - name: data
+              persistentVolumeClaim:
+                claimName: newsbrief-data
+            - name: tmp
+              emptyDir: {}

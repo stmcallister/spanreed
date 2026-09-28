@@ -1,0 +1,72 @@
+# Write and deliver the brief, once each morning at 06:00 Pacific.
+#
+# The composer only reads. It never fetches feeds, so a source that broke
+# overnight can shorten this run but cannot stop it. Every stage degrades
+# rather than aborts, and a degraded brief says so in its own footer.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: newsbrief-composer
+  labels:
+    app.kubernetes.io/name: newsbrief
+    app.kubernetes.io/component: composer
+spec:
+  schedule: "0 6 * * *"
+  timeZone: "America/Los_Angeles"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      # Without this a hung feed leaves the pod running until the next
+      # schedule, and with Forbid that silently skips runs.
+      activeDeadlineSeconds: 600
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: newsbrief
+            app.kubernetes.io/component: composer
+        spec:
+          restartPolicy: Never
+          nodeSelector:
+            newsbrief.stmcallister.dev/data-node: "true"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+          containers:
+            - name: compose
+              image: ghcr.io/stmcallister/newsbrief:latest
+              imagePullPolicy: IfNotPresent
+              command: ["python", "-m", "newsbrief"]
+              args: ["compose"]
+              envFrom:
+                - configMapRef:
+                    name: newsbrief-config
+                - secretRef:
+                    name: newsbrief-secrets
+              volumeMounts:
+                - name: data
+                  mountPath: /data
+                - name: tmp
+                  mountPath: /tmp
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 192Mi
+                limits:
+                  cpu: 1000m
+                  memory: 512Mi
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+          volumes:
+            - name: data
+              persistentVolumeClaim:
+                claimName: newsbrief-data
+            - name: tmp
+              emptyDir: {}

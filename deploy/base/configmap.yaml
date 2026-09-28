@@ -1,0 +1,27 @@
+# Non-secret configuration only. Every key here maps to a field on Settings.
+#
+# The API key, the basic auth password, and any SMTP settings come from the
+# Secret named in each workload's envFrom, which is managed outside this repo.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: newsbrief-config
+data:
+  DB_PATH: /data/newsbrief.db
+  LOG_LEVEL: INFO
+  RENDER_TIMEZONE: America/Los_Angeles
+
+  # The brief is short. This cap is also enforced in code.
+  MAX_BRIEF_ITEMS: "15"
+  DEEP_READ_ITEMS: "3"
+  ITEM_RETENTION_DAYS: "60"
+
+  FILTER_MODEL: claude-haiku-4-5-20251001
+  WRITE_MODEL: claude-sonnet-5
+
+  HTTP_TIMEOUT_SECONDS: "15"
+  USER_AGENT: "newsbrief/1.0 (+https://github.com/stmcallister/newsbrief)"
+
+  WEB_HOST: 0.0.0.0
+  WEB_PORT: "8000"
+  BASIC_AUTH_USER: newsbrief

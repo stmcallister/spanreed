@@ -1,0 +1,16 @@
+# One SQLite file shared by all three workloads.
+#
+# ReadWriteOnce means every pod that mounts it has to land on the same node,
+# which is what the nodeSelector on all three workloads is for. WAL plus a busy
+# timeout is what makes concurrent access to the file safe once they are there.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: newsbrief-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 2Gi

@@ -1,0 +1,19 @@
+# The host is environment specific and is patched by the overlay.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: newsbrief-web
+  labels:
+    app.kubernetes.io/name: newsbrief
+spec:
+  rules:
+    - host: newsbrief.example
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: newsbrief-web
+                port:
+                  name: http

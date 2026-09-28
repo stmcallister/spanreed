@@ -1,0 +1,48 @@
+# The overlay ArgoCD points at.
+#
+# Base is portable. Everything here is a fact about this one cluster: which
+# node holds the volume, what hostname the UI answers on, and which image tag
+# is deployed.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: newsbrief
+
+resources:
+  - ../../base
+
+images:
+  - name: ghcr.io/stmcallister/newsbrief
+    newTag: v0.1.0
+
+patches:
+  # Pin the web pod to the node holding the ReadWriteOnce volume.
+  - target:
+      kind: Deployment
+      name: newsbrief-web
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/nodeSelector
+        value:
+          kubernetes.io/hostname: kholinar
+
+  # Both CronJobs land on that same node, for the same reason.
+  - target:
+      kind: CronJob
+    patch: |-
+      - op: replace
+        path: /spec/jobTemplate/spec/template/spec/nodeSelector
+        value:
+          kubernetes.io/hostname: kholinar
+
+  # k3s ships Traefik. Change the host to whatever this cluster answers on.
+  - target:
+      kind: Ingress
+      name: newsbrief-web
+    patch: |-
+      - op: add
+        path: /spec/ingressClassName
+        value: traefik
+      - op: replace
+        path: /spec/rules/0/host
+        value: newsbrief.kholinar.ts.net
