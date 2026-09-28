@@ -69,15 +69,22 @@ def parse_timestamp(value: str | None) -> datetime | None:
     return parsed if parsed.tzinfo is not None else parsed.replace(tzinfo=UTC)
 
 
-def connect(db_path: Path) -> sqlite3.Connection:
+def connect(db_path: Path, *, same_thread: bool = True) -> sqlite3.Connection:
     """Open the database with the pragmas every connection must have.
 
     The connection is left in autocommit mode. Writes go through
     `write_transaction` so that the transaction boundary is always explicit and
     always short.
+
+    `same_thread=False` is for the web pod alone. FastAPI runs a synchronous
+    dependency in a threadpool while an async endpoint runs on the event loop,
+    so a per request connection is opened on one thread and used on another.
+    That handoff is sequential and the connection is never shared between two
+    requests, which is what the check actually guards against. The two CronJobs
+    are single threaded and keep the strict default.
     """
     db_path.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(db_path, isolation_level=None)
+    conn = sqlite3.connect(db_path, isolation_level=None, check_same_thread=same_thread)
     conn.row_factory = sqlite3.Row
     for pragma in PRAGMAS:
         conn.execute(pragma)

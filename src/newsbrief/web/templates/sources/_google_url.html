@@ -1,0 +1,7 @@
+{# The URL that will actually be fetched, so quoting is visible before saving. #}
+{% if error %}
+  <small class="error">{{ error }}</small>
+{% elif url %}
+  <small class="muted">Will fetch</small>
+  <p class="url-preview">{{ url }}</p>
+{% endif %}

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% set active = 'health' %}
+{% block title %}Source health - newsbrief{% endblock %}
+{% block content %}
+<hgroup>
+  <h1>Source health</h1>
+  <p>Worst first. A source is disabled automatically after
+     {{ max_failures }} consecutive failures, and never deleted.</p>
+</hgroup>
+
+{% if auto_disabled_count %}
+  <article>
+    <p class="error">
+      <strong>{{ auto_disabled_count }} source{{ '' if auto_disabled_count == 1 else 's' }}
+      disabled automatically.</strong>
+      Fix the setting, then revive it. Reviving clears the failure count.
+    </p>
+  </article>
+{% endif %}
+
+{% if rows %}
+<table>
+  <thead>
+    <tr>
+      <th scope="col">Topic</th>
+      <th scope="col">Type</th>
+      <th scope="col">Status</th>
+      <th scope="col">Failures</th>
+      <th scope="col">Last success</th>
+      <th scope="col">Last error</th>
+      <th scope="col"></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in rows %}
+      <tr>
+        <td><a href="/topics/{{ row.source.topic_id }}">{{ row.topic_name }}</a></td>
+        <td>{{ row.source.type }}</td>
+        <td>
+          {% if row.auto_disabled %}
+            <span class="pill bad">auto disabled</span>
+          {% elif not row.source.enabled %}
+            <span class="pill">off</span>
+          {% elif row.source.last_status == 'error' %}
+            <span class="pill warn">error</span>
+          {% elif row.source.last_status %}
+            <span class="pill good">{{ row.source.last_status }}</span>
+          {% else %}
+            <span class="muted">never fetched</span>
+          {% endif %}
+        </td>
+        <td>{{ row.source.consecutive_failures }}</td>
+        <td><span class="muted">{{ row.last_ok_at | relative_time }}</span></td>
+        <td><small class="muted">{{ row.source.last_error or '' }}</small></td>
+        <td class="row-actions">
+          {% if not row.source.enabled %}
+            <form class="inline-form" method="post" action="/sources/{{ row.source.id }}/revive">
+              <button type="submit" class="secondary outline">Revive</button>
+            </form>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="muted">No sources configured yet.</p>
+{% endif %}
+{% endblock %}

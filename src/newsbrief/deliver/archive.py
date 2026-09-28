@@ -22,7 +22,9 @@ from newsbrief.compose.filter import Scored
 
 log = structlog.get_logger(__name__)
 
-_MD = MarkdownIt("commonmark")
+# Raw HTML off. The markdown comes from a model working over feed content,
+# and the archive page renders the result with |safe.
+_MD = MarkdownIt("commonmark", {"html": False})
 
 _UPSERT_BRIEF = """
 INSERT INTO briefs (

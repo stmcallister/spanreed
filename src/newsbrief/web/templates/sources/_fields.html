@@ -1,0 +1,23 @@
+{# Inputs for one source type, read from that adapter's own config model. #}
+{% for field in fields %}
+  <label>
+    {{ field.label }}
+    <input type="text"
+           name="{{ field.name }}"
+           value="{{ values.get(field.name, '') if values else '' }}"
+           placeholder="{{ field.placeholder }}"
+           {% if field.required %}required{% endif %}>
+    {% if field.hint %}<small>{{ field.hint }}</small>{% endif %}
+  </label>
+{% endfor %}
+
+{% if source_type == 'google_news' %}
+  {# The constructed URL, updated as the query is typed. The div listens to the
+     whole form rather than the inputs carrying handlers of their own. #}
+  <div class="google-url"
+       hx-get="/sources/google-news-url"
+       hx-trigger="load, keyup changed delay:300ms from:closest form, change from:closest form"
+       hx-include="closest form"
+       hx-swap="innerHTML">
+  </div>
+{% endif %}

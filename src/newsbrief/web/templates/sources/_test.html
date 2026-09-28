@@ -1,0 +1,32 @@
+{# The result of a live test fetch. Nothing here was written to the database. #}
+{% if error %}
+  <article>
+    <p class="error"><strong>Test failed.</strong> {{ error }}</p>
+  </article>
+{% elif items %}
+  <article>
+    <header>
+      <strong>{{ total }} item{{ '' if total == 1 else 's' }} returned</strong>
+      <span class="muted">showing the first {{ items | length }}. Nothing was saved.</span>
+    </header>
+    <ul>
+      {% for item in items %}
+        <li>
+          <a href="{{ item.canonical_url or item.url }}" target="_blank" rel="noreferrer">
+            {{ item.title }}
+          </a>
+          <br>
+          <small class="muted">
+            {{ item.source_name or 'unknown source' }}
+            {% if item.published_at %} - {{ item.published_at.strftime('%Y-%m-%d %H:%M') }}{% endif %}
+          </small>
+        </li>
+      {% endfor %}
+    </ul>
+  </article>
+{% else %}
+  <article>
+    <p>No items came back. The source works but has nothing recent, or the query
+    matches nothing.</p>
+  </article>
+{% endif %}

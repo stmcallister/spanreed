@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% set active = 'briefs' %}
+{% block title %}Briefs - newsbrief{% endblock %}
+{% block content %}
+<hgroup>
+  <h1>Briefs</h1>
+  <p>One per morning. Kept forever, they are small.</p>
+</hgroup>
+
+<form method="post" action="/briefs/generate">
+  <button type="submit">Generate now</button>
+  <small class="muted">Runs the real composer against today's items, and spends tokens.</small>
+</form>
+
+{% if briefs %}
+<table>
+  <thead>
+    <tr>
+      <th scope="col">Date</th>
+      <th scope="col">Items</th>
+      <th scope="col">Model</th>
+      <th scope="col">Tokens</th>
+      <th scope="col">Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for brief in briefs %}
+      <tr>
+        <td>
+          <a href="/briefs/{{ brief.brief_date }}">{{ brief.brief_date }}</a>
+          {% if brief.degraded %}<span class="pill warn">degraded</span>{% endif %}
+        </td>
+        <td>{{ brief.item_count }}</td>
+        <td><small class="muted">{{ brief.model or 'none' }}</small></td>
+        <td>
+          <small class="muted">
+            {% if brief.input_tokens %}
+              {{ brief.input_tokens }} in / {{ brief.output_tokens }} out
+            {% endif %}
+          </small>
+        </td>
+        <td><small class="muted">{{ brief.notes or '' }}</small></td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="muted">No briefs yet. The composer runs at 06:00 Pacific, or press the button.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,34 @@
+{# One row of the topics list. Swapped in place when the toggle is used. #}
+<tr id="topic-{{ summary.topic.id }}">
+  <td>
+    <a href="/topics/{{ summary.topic.id }}">{{ summary.topic.name }}</a>
+    {% if not summary.topic.enabled %}<span class="pill">off</span>{% endif %}
+  </td>
+  <td><span class="pill">{{ summary.topic.kind }}</span></td>
+  <td>
+    {{ summary.source_count }}
+    {% if summary.has_disabled_sources %}
+      <span class="muted">({{ summary.enabled_source_count }} on)</span>
+    {% endif %}
+  </td>
+  <td>
+    {% if summary.recent_item_count %}
+      {{ summary.recent_item_count }}
+    {% else %}
+      <span class="pill warn" title="Nothing collected recently">0</span>
+    {% endif %}
+  </td>
+  <td>{{ summary.topic.priority }}</td>
+  <td>{{ summary.topic.max_items }}</td>
+  <td class="row-actions">
+    <form class="inline-form"
+          hx-post="/topics/{{ summary.topic.id }}/enabled"
+          hx-target="#topic-{{ summary.topic.id }}"
+          hx-swap="outerHTML">
+      <input type="hidden" name="enabled" value="{{ 'false' if summary.topic.enabled else 'true' }}">
+      <button type="submit" class="secondary outline">
+        {{ 'Disable' if summary.topic.enabled else 'Enable' }}
+      </button>
+    </form>
+  </td>
+</tr>

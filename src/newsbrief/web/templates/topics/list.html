@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% set active = 'topics' %}
+{% block title %}Topics - newsbrief{% endblock %}
+{% block content %}
+<hgroup>
+  <h1>Topics</h1>
+  <p>What the brief follows. Item counts cover the last {{ activity_days }} days.</p>
+</hgroup>
+
+<p><a href="/topics/new" role="button">Add a topic</a></p>
+
+{% if summaries %}
+<table>
+  <thead>
+    <tr>
+      <th scope="col">Name</th>
+      <th scope="col">Kind</th>
+      <th scope="col">Sources</th>
+      <th scope="col">Items</th>
+      <th scope="col">Priority</th>
+      <th scope="col">Max</th>
+      <th scope="col"></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for summary in summaries %}
+      {% include "topics/_row.html" %}
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<article>
+  <p>No topics yet. Add one, give it a source, and the collector picks it up on
+  its next run.</p>
+</article>
+{% endif %}
+{% endblock %}

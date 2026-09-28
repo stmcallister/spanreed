@@ -31,6 +31,14 @@ def _isolated_settings(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Itera
     get_settings.cache_clear()
 
 
+@pytest.fixture(autouse=True)
+def _do_not_actually_serve(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The web command blocks forever by design, which a test cannot allow."""
+    import uvicorn
+
+    monkeypatch.setattr(uvicorn, "run", lambda *args, **kwargs: None)
+
+
 def test_settings_read_the_database_path_from_the_environment(tmp_path: Path) -> None:
     assert get_settings().db_path == tmp_path / "newsbrief.db"
 
@@ -68,8 +76,9 @@ def test_compose_succeeds_with_an_empty_database(capsys: pytest.CaptureFixture[s
     assert "Nothing to report today." in capsys.readouterr().out
 
 
-def test_the_web_ui_still_reports_that_it_is_unimplemented() -> None:
-    assert main(["web"]) == 1
+def test_the_web_command_serves() -> None:
+    """With uvicorn stubbed this only proves the app builds and dispatch works."""
+    assert main(["web"]) == 0
 
 
 def test_a_broken_database_path_exits_one(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:

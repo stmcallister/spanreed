@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}newsbrief{% endblock %}</title>
+  <link rel="stylesheet" href="/static/pico.min.css">
+  <script src="/static/htmx.min.js" defer></script>
+  <style>
+    :root { --pico-font-size: 95%; }
+    main.container { max-width: 62rem; }
+    nav.top { margin-bottom: 1.5rem; }
+    nav.top a.active { font-weight: 600; }
+    table td, table th { vertical-align: middle; }
+    .muted { color: var(--pico-muted-color); font-size: 0.85em; }
+    .pill { font-size: 0.75em; padding: 0.15em 0.5em; border-radius: 1em;
+            background: var(--pico-secondary-background); color: var(--pico-secondary-inverse);
+            white-space: nowrap; }
+    .pill.bad { background: var(--pico-del-color); color: #fff; }
+    .pill.warn { background: #b45309; color: #fff; }
+    .pill.good { background: var(--pico-ins-color); color: #fff; }
+    .inline-form { display: inline; margin: 0; }
+    .inline-form button { margin: 0; padding: 0.25em 0.7em; font-size: 0.8em; width: auto; }
+    .url-preview { font-family: var(--pico-font-family-monospace); font-size: 0.8em;
+                   word-break: break-all; }
+    .row-actions { text-align: right; white-space: nowrap; }
+    article.source { padding: 1rem; margin-bottom: 1rem; }
+    .error { color: var(--pico-del-color); }
+  </style>
+</head>
+<body>
+<main class="container">
+  <nav class="top">
+    <ul>
+      <li><strong>newsbrief</strong></li>
+    </ul>
+    <ul>
+      <li><a href="/" {% if active == 'topics' %}class="active"{% endif %}>Topics</a></li>
+      <li><a href="/health" {% if active == 'health' %}class="active"{% endif %}>Source health</a></li>
+      <li><a href="/briefs" {% if active == 'briefs' %}class="active"{% endif %}>Briefs</a></li>
+    </ul>
+  </nav>
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>
