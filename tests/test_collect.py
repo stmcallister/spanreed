@@ -304,9 +304,9 @@ def test_an_invalid_config_is_an_error_not_a_crash(
 def test_an_unregistered_source_type_is_skipped_without_counting_as_a_failure(
     settings: Settings, conn: sqlite3.Connection
 ) -> None:
-    """The remaining adapters arrive in a later phase. Until then, skip cleanly."""
+    """A type with no adapter behind it skips cleanly rather than crashing."""
     topic = add_topic(conn)
-    source = add_source(conn, topic, "espn", {"sport": "soccer"})
+    source = add_source(conn, topic, "carrier_pigeon", {"loft": "north"})
 
     assert collect.run(settings) == 0
 
@@ -365,3 +365,20 @@ def test_run_exits_nonzero_when_the_database_cannot_be_opened(
     blocker.write_text("not a directory")
     settings = Settings(db_path=blocker / "newsbrief.db")
     assert collect.run(settings) == 1
+
+
+def test_an_unconfigured_optional_source_is_skipped_not_failed(
+    conn: sqlite3.Connection, client: httpx.Client
+) -> None:
+    """An integration nobody turned on must not burn down the failure counter
+    and eventually auto disable a source that was never misconfigured."""
+    topic_id = add_topic(conn)
+    source_id = add_source(conn, topic_id, "rsshub", {"route": "/github/issue/a/b"})
+
+    source = collect.load_due_sources(conn)[0]
+    result = collect.collect_source(conn, client, source, NOW)
+
+    assert result.status == "skipped"
+    row = conn.execute("SELECT * FROM sources WHERE id = ?", (source_id,)).fetchone()
+    assert row["consecutive_failures"] == 0
+    assert row["enabled"] == 1

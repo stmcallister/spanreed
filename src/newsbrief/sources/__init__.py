@@ -1,6 +1,6 @@
 """The adapter registry.
 
-Adding a source type means writing the adapter and adding one line here. The
+Adding a source type means writing the adapter and adding two lines here. The
 collector and the web UI both go through `get_adapter`, so a type that is not
 registered degrades to a skipped source rather than a crash.
 """
@@ -12,19 +12,32 @@ from collections.abc import Callable
 import httpx
 
 from newsbrief.sources.base import NotModifiedError, SourceAdapter, SourceConfig, build_client
+from newsbrief.sources.bluesky import BlueskyAdapter, BlueskyConfig
+from newsbrief.sources.discovery import FeedCandidate, discover
+from newsbrief.sources.espn import EspnAdapter, EspnConfig
 from newsbrief.sources.google_news import GoogleNewsAdapter, GoogleNewsConfig
+from newsbrief.sources.reddit import RedditAdapter, RedditConfig
 from newsbrief.sources.rss import RssAdapter, RssConfig
+from newsbrief.sources.rsshub import RsshubAdapter, RsshubConfig, RsshubUnconfiguredError
 
 AdapterFactory = Callable[[httpx.Client], SourceAdapter]
 
 ADAPTERS: dict[str, AdapterFactory] = {
     RssAdapter.type: RssAdapter,
     GoogleNewsAdapter.type: GoogleNewsAdapter,
+    EspnAdapter.type: EspnAdapter,
+    RedditAdapter.type: RedditAdapter,
+    BlueskyAdapter.type: BlueskyAdapter,
+    RsshubAdapter.type: RsshubAdapter,
 }
 
 CONFIG_MODELS: dict[str, type[SourceConfig]] = {
     RssAdapter.type: RssConfig,
     GoogleNewsAdapter.type: GoogleNewsConfig,
+    EspnAdapter.type: EspnConfig,
+    RedditAdapter.type: RedditConfig,
+    BlueskyAdapter.type: BlueskyConfig,
+    RsshubAdapter.type: RsshubConfig,
 }
 
 
@@ -37,13 +50,24 @@ def get_adapter(source_type: str, client: httpx.Client) -> SourceAdapter | None:
 __all__ = [
     "ADAPTERS",
     "CONFIG_MODELS",
+    "BlueskyAdapter",
+    "BlueskyConfig",
+    "EspnAdapter",
+    "EspnConfig",
+    "FeedCandidate",
     "GoogleNewsAdapter",
     "GoogleNewsConfig",
     "NotModifiedError",
+    "RedditAdapter",
+    "RedditConfig",
     "RssAdapter",
     "RssConfig",
+    "RsshubAdapter",
+    "RsshubConfig",
+    "RsshubUnconfiguredError",
     "SourceAdapter",
     "SourceConfig",
     "build_client",
+    "discover",
     "get_adapter",
 ]

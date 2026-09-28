@@ -107,6 +107,21 @@
   {% endfor %}
 
   <article>
+    <header><strong>Find a feed</strong></header>
+    <label>
+      Site URL
+      {# Named `url` so HTMX sends it as the query parameter the route reads. #}
+      <input type="text" name="url" placeholder="arstechnica.com"
+             hx-get="/topics/{{ topic.id }}/discover"
+             hx-trigger="keyup changed delay:600ms, change"
+             hx-target="#discovered">
+      <small>Paste a site and this looks for its feeds. Nothing is saved until
+      you add one.</small>
+    </label>
+    <div id="discovered"></div>
+  </article>
+
+  <article>
     <header><strong>Add a source</strong></header>
     <form method="post" action="/topics/{{ topic.id }}/sources" id="new-source">
       <label>

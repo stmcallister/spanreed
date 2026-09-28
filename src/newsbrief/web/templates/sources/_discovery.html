@@ -1,0 +1,26 @@
+{# Feeds found on a pasted site. Each one was fetched and parsed to confirm it. #}
+{% if not searched %}
+{% elif candidates %}
+  <ul>
+    {% for candidate in candidates %}
+      <li>
+        <strong>{{ candidate.title or candidate.url }}</strong>
+        <span class="muted">{{ candidate.item_count }} item{{ '' if candidate.item_count == 1 else 's' }}</span>
+        <br>
+        <span class="url-preview">{{ candidate.url }}</span>
+        {% if candidate.latest_title %}
+          <br><small class="muted">Latest: {{ candidate.latest_title }}</small>
+        {% endif %}
+        <br>
+        <form class="inline-form" method="post" action="/topics/{{ topic_id }}/sources">
+          <input type="hidden" name="type" value="rss">
+          <input type="hidden" name="url" value="{{ candidate.url }}">
+          <button type="submit" class="secondary">Add as a source</button>
+        </form>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p class="muted">No feed found. Some sites publish one without advertising it,
+  so a direct feed URL may still work if you know it.</p>
+{% endif %}

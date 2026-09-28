@@ -142,29 +142,70 @@ def _entry_source_name(entry: Any, feed_title: str | None) -> str | None:
     return feed_title
 
 
-def _entry_to_raw_item(entry: Any, feed_title: str | None) -> RawItem | None:
+MAX_SYNTHETIC_TITLE_CHARS = 110
+"""A synthesized title is a headline, not the whole post."""
+
+
+def title_from_summary(summary: str | None) -> str | None:
+    """Make a headline out of a post that has no title of its own.
+
+    Bluesky publishes every post with an empty `<title>`, so without this the
+    generic parser drops a whole feed on the floor. The first sentence, or the
+    first hundred or so characters on a word boundary, reads like a headline
+    often enough to be worth it.
+    """
+    if not summary:
+        return None
+    text = " ".join(summary.split())
+    if not text:
+        return None
+
+    sentence, separator, _ = text.partition(". ")
+    if separator and len(sentence) <= MAX_SYNTHETIC_TITLE_CHARS:
+        return sentence
+
+    if len(text) <= MAX_SYNTHETIC_TITLE_CHARS:
+        return text
+    clipped = text[:MAX_SYNTHETIC_TITLE_CHARS]
+    head, space, _ = clipped.rpartition(" ")
+    return f"{head if space else clipped}..."
+
+
+def _entry_to_raw_item(
+    entry: Any, feed_title: str | None, synthesize_title: bool = False
+) -> RawItem | None:
     url = _entry_link(entry)
+    if not url:
+        return None
+
+    summary = strip_html(entry.get("summary"))
     title = entry.get("title")
-    if not url or not isinstance(title, str) or not title.strip():
+    if not isinstance(title, str) or not title.strip():
+        title = title_from_summary(summary) if synthesize_title else None
+    if not title:
         return None
 
     author = entry.get("author")
     return RawItem(
         url=url,
         title=" ".join(title.split()),
-        summary=strip_html(entry.get("summary")),
+        summary=summary,
         author=author.strip() if isinstance(author, str) and author.strip() else None,
         source_name=_entry_source_name(entry, feed_title),
         published_at=to_datetime(entry.get("published_parsed") or entry.get("updated_parsed")),
     )
 
 
-def parse_feed(payload: bytes) -> list[RawItem]:
+def parse_feed(payload: bytes, *, synthesize_title: bool = False) -> list[RawItem]:
     """Parse an RSS or Atom document into raw items, skipping anything unusable.
 
     feedparser recovers entries from documents that are not well formed, so a
     truncated response usually still yields the entries that arrived. Whatever
     it cannot make sense of is dropped one entry at a time.
+
+    `synthesize_title` is for feeds whose entries carry no title at all. It is
+    opt in, because for an ordinary feed a missing title means a broken entry
+    and dropping it is right.
     """
     parsed = feedparser.parse(payload)
     if parsed.get("bozo"):
@@ -180,7 +221,7 @@ def parse_feed(payload: bytes) -> list[RawItem]:
     items: list[RawItem] = []
     for entry in parsed.get("entries") or []:
         try:
-            item = _entry_to_raw_item(entry, feed_title)
+            item = _entry_to_raw_item(entry, feed_title, synthesize_title)
         except Exception:
             log.warning("skipping an entry that could not be read", exc_info=True)
             continue

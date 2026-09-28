@@ -30,6 +30,7 @@ from newsbrief.db import parse_timestamp, to_iso_utc
 from newsbrief.models import FetchResult, FetchStatus, RawItem, Source
 from newsbrief.sources import build_client, get_adapter
 from newsbrief.sources.base import NotModifiedError
+from newsbrief.sources.rsshub import RsshubUnconfiguredError
 
 log = structlog.get_logger(__name__)
 
@@ -284,6 +285,11 @@ def collect_source(
     except NotModifiedError:
         bound.info("source unchanged since the last fetch")
         return _persist(conn, source, "not_modified", now, config=config)
+    except RsshubUnconfiguredError as exc:
+        # Skipped, not failed. An optional integration nobody turned on must
+        # not burn down the failure counter and auto disable the source.
+        bound.info("source skipped, its optional integration is not configured")
+        return _persist(conn, source, "skipped", now, error=str(exc))
     except Exception as exc:
         bound.warning("source fetch failed", exc_info=True)
         return _persist(conn, source, "error", now, error=_short(f"{type(exc).__name__}: {exc}"))

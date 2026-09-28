@@ -112,6 +112,21 @@ def validate(source_type: str, config: Mapping[str, object]) -> tuple[BaseModel 
         )
 
 
+def config_from_model(model: BaseModel) -> dict[str, object]:
+    """The config as its own model normalized it.
+
+    Validation is where `r/rust` becomes `rust` and a pasted profile URL becomes
+    a handle. Storing the raw form text instead would leave the database holding
+    something the adapter has to re-normalize on every fetch, and would show the
+    user their typo back as though it had been accepted verbatim.
+
+    Unset optional fields are dropped rather than stored as nulls, which keeps
+    the collector's cache bookkeeping out of a config that has none yet.
+    """
+    dumped: dict[str, object] = model.model_dump(mode="json", exclude_none=True)
+    return dumped
+
+
 def merge_bookkeeping(
     existing: Mapping[str, object], config: Mapping[str, object]
 ) -> dict[str, object]:

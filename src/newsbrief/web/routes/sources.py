@@ -19,7 +19,7 @@ from fastapi import APIRouter, Form, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from pydantic import ValidationError
 
-from newsbrief.sources import CONFIG_MODELS, build_client, get_adapter
+from newsbrief.sources import CONFIG_MODELS, build_client, discover, get_adapter
 from newsbrief.sources.base import NotModifiedError
 from newsbrief.sources.google_news import GoogleNewsConfig, build_url
 from newsbrief.web import forms, repo
@@ -118,6 +118,30 @@ async def test_source(request: Request, settings: Config) -> Response:
     return templates.TemplateResponse(request, "sources/_test.html", context)
 
 
+@router.get("/topics/{topic_id}/discover", response_class=HTMLResponse)
+def discover_feeds(
+    request: Request, topic_id: int, conn: Conn, settings: Config, url: str = ""
+) -> Response:
+    """Find the feeds on a site somebody pasted.
+
+    Answers with every feed it could confirm by fetching it, each one ready to
+    be added with one more click. Nothing is written until that click.
+    """
+    if repo.get_topic(conn, topic_id) is None:
+        raise HTTPException(status_code=404, detail="no such topic")
+
+    candidates = []
+    if url.strip():
+        with build_client(settings) as client:
+            candidates = discover(client, url)
+
+    return templates.TemplateResponse(
+        request,
+        "sources/_discovery.html",
+        {"candidates": candidates, "topic_id": topic_id, "searched": bool(url.strip())},
+    )
+
+
 @router.post("/topics/{topic_id}/sources")
 async def create_source(request: Request, conn: Conn, topic_id: int) -> Response:
     if repo.get_topic(conn, topic_id) is None:
@@ -125,12 +149,11 @@ async def create_source(request: Request, conn: Conn, topic_id: int) -> Response
 
     form = await request.form()
     source_type = str(form.get("type") or "")
-    config = forms.config_from_form(source_type, form)
-    _, error = forms.validate(source_type, config)
-    if error is not None:
+    model, error = forms.validate(source_type, forms.config_from_form(source_type, form))
+    if model is None:
         raise HTTPException(status_code=400, detail=error)
 
-    source_id = repo.create_source(conn, topic_id, source_type, config)
+    source_id = repo.create_source(conn, topic_id, source_type, forms.config_from_model(model))
     log.info("source created", source_id=source_id, source_type=source_type, topic_id=topic_id)
     return RedirectResponse(f"/topics/{topic_id}", status_code=303)
 
@@ -143,12 +166,11 @@ async def save_source(request: Request, conn: Conn, source_id: int) -> Response:
 
     form = await request.form()
     source_type = str(form.get("type") or source.type)
-    config = forms.config_from_form(source_type, form)
-    _, error = forms.validate(source_type, config)
-    if error is not None:
+    model, error = forms.validate(source_type, forms.config_from_form(source_type, form))
+    if model is None:
         raise HTTPException(status_code=400, detail=error)
 
-    merged = forms.merge_bookkeeping(source.config, config)
+    merged = forms.merge_bookkeeping(source.config, forms.config_from_model(model))
     repo.update_source(conn, source_id, source_type, merged)
     return RedirectResponse(f"/topics/{source.topic_id}", status_code=303)
 

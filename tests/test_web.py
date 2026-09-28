@@ -288,7 +288,7 @@ def test_an_optional_field_left_blank_uses_its_default(
     )
 
     source = repo.sources_for_topic(conn, topic_id)[0]
-    assert source.config == {"query": "midlakes united"}
+    assert source.config == {"query": "midlakes united", "window": "1d"}
 
 
 def test_editing_a_source_clears_its_failure_history(
@@ -578,3 +578,103 @@ def test_generate_now_runs_the_composer(
 
     assert response.status_code == 303
     assert conn.execute("SELECT COUNT(*) AS n FROM briefs").fetchone()["n"] == 1
+
+
+# --- feed discovery ---------------------------------------------------------
+
+
+@respx.mock
+def test_discovery_finds_a_feed_on_a_pasted_site(
+    client: TestClient, conn: sqlite3.Connection
+) -> None:
+    topic_id = add_topic(conn)
+    respx.get("https://example.test/").mock(
+        return_value=httpx.Response(200, content=fixture_bytes("site_with_feed.html"))
+    )
+    respx.get("https://example.test/feed/").mock(
+        return_value=httpx.Response(200, content=fixture_bytes("rss_basic.xml"))
+    )
+    respx.get("https://example.test/comments/atom.xml").mock(return_value=httpx.Response(404))
+
+    page = client.get(f"/topics/{topic_id}/discover", params={"url": "example.test"}).text
+
+    assert "https://example.test/feed/" in page
+    assert "Add as a source" in page
+
+
+def test_discovery_with_no_url_asks_for_nothing(
+    client: TestClient, conn: sqlite3.Connection
+) -> None:
+    """The input fires on keyup, so an empty box must not start fetching."""
+    topic_id = add_topic(conn)
+
+    response = client.get(f"/topics/{topic_id}/discover", params={"url": ""})
+
+    assert response.status_code == 200
+    assert response.text.strip() == ""
+
+
+@respx.mock
+def test_discovery_says_so_when_it_finds_nothing(
+    client: TestClient, conn: sqlite3.Connection
+) -> None:
+    topic_id = add_topic(conn)
+    respx.get("https://example.test/").mock(
+        return_value=httpx.Response(200, content=fixture_bytes("site_without_feed.html"))
+    )
+    for path in ("/feed/", "/rss", "/feed.xml", "/atom.xml", "/index.xml", "/blog/feed/"):
+        respx.get(f"https://example.test{path}").mock(return_value=httpx.Response(404))
+
+    page = client.get(f"/topics/{topic_id}/discover", params={"url": "example.test"}).text
+
+    assert "No feed found" in page
+
+
+def test_discovery_on_a_topic_that_is_gone_is_a_404(client: TestClient) -> None:
+    assert client.get("/topics/999/discover", params={"url": "x.test"}).status_code == 404
+
+
+# --- the new source types ---------------------------------------------------
+
+
+def test_every_registered_adapter_has_an_editor_form(client: TestClient) -> None:
+    """The form is read off each adapter's config model, so a new adapter gets
+    its fields without anybody editing a template."""
+    from newsbrief.sources import CONFIG_MODELS
+
+    for source_type in CONFIG_MODELS:
+        page = client.get("/sources/fields", params={"type": source_type}).text
+        assert 'name="' in page, source_type
+
+
+def test_the_espn_form_offers_its_three_fields(client: TestClient) -> None:
+    page = client.get("/sources/fields", params={"type": "espn"}).text
+
+    for field in ("sport", "league", "team_id"):
+        assert f'name="{field}"' in page
+
+
+def test_a_reddit_source_can_be_added_through_the_ui(
+    client: TestClient, conn: sqlite3.Connection
+) -> None:
+    topic_id = add_topic(conn)
+
+    client.post(
+        f"/topics/{topic_id}/sources",
+        data={"type": "reddit", "subreddit": "r/rust", "listing": "top", "window": "week"},
+    )
+
+    source = repo.sources_for_topic(conn, topic_id)[0]
+    assert source.config == {"subreddit": "rust", "listing": "top", "window": "week"}
+
+
+def test_an_invalid_reddit_listing_is_refused(client: TestClient, conn: sqlite3.Connection) -> None:
+    topic_id = add_topic(conn)
+
+    response = client.post(
+        f"/topics/{topic_id}/sources",
+        data={"type": "reddit", "subreddit": "rust", "listing": "popular"},
+    )
+
+    assert response.status_code == 400
+    assert repo.sources_for_topic(conn, topic_id) == []
