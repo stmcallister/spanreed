@@ -11,6 +11,7 @@ import re
 import sqlite3
 from collections.abc import Iterator
 from contextlib import contextmanager
+from datetime import UTC, datetime
 from pathlib import Path
 
 import structlog
@@ -39,6 +40,33 @@ _MIGRATION_NAME = re.compile(r"^(\d+)_[\w.]+\.sql$")
 
 class MigrationError(RuntimeError):
     """Raised when the migrations directory is not usable."""
+
+
+def to_iso_utc(value: datetime) -> str:
+    """Every timestamp in the database is an ISO 8601 UTC string.
+
+    Conversion to America/Los_Angeles happens at render time and nowhere else.
+    """
+    aware = value if value.tzinfo is not None else value.replace(tzinfo=UTC)
+    return aware.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def parse_timestamp(value: str | None) -> datetime | None:
+    """Read a stored timestamp, tolerating the SQLite `datetime('now')` format.
+
+    Column defaults produce `YYYY-MM-DD HH:MM:SS` while our own writes produce
+    `...Z`, so both have to be readable.
+    """
+    if not value:
+        return None
+    text = value.strip().replace(" ", "T")
+    if text.endswith("Z"):
+        text = f"{text[:-1]}+00:00"
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo is not None else parsed.replace(tzinfo=UTC)
 
 
 def connect(db_path: Path) -> sqlite3.Connection:

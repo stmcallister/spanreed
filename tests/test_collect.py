@@ -109,19 +109,6 @@ def test_a_naive_published_date_is_read_as_utc() -> None:
     assert collect._published_iso(item, NOW) == "2026-08-30T09:00:00Z"
 
 
-@pytest.mark.parametrize(
-    ("stored", "expected"),
-    [
-        ("2026-08-30T17:30:00Z", datetime(2026, 8, 30, 17, 30, tzinfo=UTC)),
-        ("2026-08-30 17:30:00", datetime(2026, 8, 30, 17, 30, tzinfo=UTC)),
-        ("not a timestamp", None),
-        (None, None),
-    ],
-)
-def test_parse_timestamp_reads_both_formats(stored: str | None, expected: datetime | None) -> None:
-    assert collect.parse_timestamp(stored) == expected
-
-
 # --- the collector loop -----------------------------------------------------
 
 

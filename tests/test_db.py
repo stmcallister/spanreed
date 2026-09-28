@@ -1,8 +1,9 @@
-"""Smoke tests for the connection pragmas and the migration runner."""
+"""Smoke tests for the connection pragmas, the migration runner, and timestamps."""
 
 from __future__ import annotations
 
 import sqlite3
+from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -13,6 +14,34 @@ from newsbrief import db
 @pytest.fixture
 def db_path(tmp_path: Path) -> Path:
     return tmp_path / "nested" / "newsbrief.db"
+
+
+@pytest.mark.parametrize(
+    ("stored", "expected"),
+    [
+        ("2026-08-30T17:30:00Z", datetime(2026, 8, 30, 17, 30, tzinfo=UTC)),
+        ("2026-08-30 17:30:00", datetime(2026, 8, 30, 17, 30, tzinfo=UTC)),
+        ("2026-08-30T17:30:00+00:00", datetime(2026, 8, 30, 17, 30, tzinfo=UTC)),
+        ("not a timestamp", None),
+        ("", None),
+        (None, None),
+    ],
+)
+def test_parse_timestamp_reads_both_stored_formats(
+    stored: str | None, expected: datetime | None
+) -> None:
+    """Our own writes end in Z, the column defaults use a space."""
+    assert db.parse_timestamp(stored) == expected
+
+
+def test_to_iso_utc_converts_from_another_zone() -> None:
+    """Storage is always UTC. Pacific time only exists at render time."""
+    pacific = datetime(2026, 8, 30, 10, 30, tzinfo=timezone(timedelta(hours=-7)))
+    assert db.to_iso_utc(pacific) == "2026-08-30T17:30:00Z"
+
+
+def test_to_iso_utc_treats_a_naive_datetime_as_utc() -> None:
+    assert db.to_iso_utc(datetime(2026, 8, 30, 17, 30)) == "2026-08-30T17:30:00Z"
 
 
 def test_connect_applies_required_pragmas(db_path: Path) -> None:

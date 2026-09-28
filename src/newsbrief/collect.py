@@ -26,6 +26,7 @@ from pydantic import BaseModel, ValidationError
 
 from newsbrief import db
 from newsbrief.config import Settings
+from newsbrief.db import parse_timestamp, to_iso_utc
 from newsbrief.models import FetchResult, FetchStatus, RawItem, Source
 from newsbrief.sources import build_client, get_adapter
 from newsbrief.sources.base import NotModifiedError
@@ -79,30 +80,6 @@ _INSERT_FETCH_LOG = """
 INSERT INTO fetch_log (source_id, run_at, status, item_count, error)
 VALUES (?, ?, ?, ?, ?)
 """
-
-
-def to_iso_utc(value: datetime) -> str:
-    """Every timestamp in the database is an ISO 8601 UTC string."""
-    aware = value if value.tzinfo is not None else value.replace(tzinfo=UTC)
-    return aware.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-
-def parse_timestamp(value: str | None) -> datetime | None:
-    """Read a stored timestamp, tolerating the SQLite `datetime('now')` format.
-
-    Column defaults produce `YYYY-MM-DD HH:MM:SS` while our own writes produce
-    `...Z`, so both have to be readable.
-    """
-    if not value:
-        return None
-    text = value.strip().replace(" ", "T")
-    if text.endswith("Z"):
-        text = f"{text[:-1]}+00:00"
-    try:
-        parsed = datetime.fromisoformat(text)
-    except ValueError:
-        return None
-    return parsed if parsed.tzinfo is not None else parsed.replace(tzinfo=UTC)
 
 
 def strip_attribution(title: str) -> str:
