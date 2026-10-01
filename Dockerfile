@@ -39,6 +39,10 @@ RUN groupadd --gid 1000 newsbrief \
 
 COPY --from=builder --chown=root:root /opt/venv /opt/venv
 
+# Bootstrap configuration for a database that has none yet. Read once, on a
+# first start, and ignored forever after that.
+COPY --chown=root:root seed/ /app/seed/
+
 USER 1000:1000
 WORKDIR /app
 EXPOSE 8000

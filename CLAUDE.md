@@ -433,7 +433,7 @@ Migrations run at container start in all three entrypoints, guarded by the `sche
 
 ## Testing
 
-- Every adapter has tests against recorded fixtures in `tests/fixtures/`. No network in the test suite.
+- Every adapter has tests against recorded fixtures in `tests/fixtures/`. No network in the test suite, enforced by an autouse guard in `conftest.py` that fails any test attempting a non-loopback connection or DNS lookup.
 - Each adapter has an explicit test where the fixture is truncated or restructured, asserting that it returns fewer items rather than raising. This matters most for ESPN.
 - Dedupe tests covering the syndicated-story case: same story, six sources, six URLs, one surviving item.
 - Composer pipeline tests with the LLM wrapper stubbed, covering both the happy path and the degraded path.

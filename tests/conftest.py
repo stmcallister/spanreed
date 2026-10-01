@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import socket
 import sqlite3
 from collections.abc import Iterator
 from datetime import UTC, datetime
@@ -17,6 +18,67 @@ from newsbrief.config import Settings
 from newsbrief.llm import Usage
 from newsbrief.models import Topic
 from newsbrief.sources.base import build_client
+
+_LOCAL_HOSTS = frozenset({"127.0.0.1", "::1", "localhost", ""})
+
+_real_connect = socket.socket.connect
+_real_connect_ex = socket.socket.connect_ex
+_real_getaddrinfo = socket.getaddrinfo
+
+
+def _host_of(address: Any) -> str:
+    return str(address[0]) if isinstance(address, tuple) and address else str(address)
+
+
+def _refuse(target: str, kind: str) -> AssertionError:
+    return AssertionError(f"this test tried to {kind} {target}. Record a fixture instead.")
+
+
+@pytest.fixture(autouse=True, scope="session")
+def _no_network() -> Iterator[None]:
+    """Make a real outbound connection fail the test that attempts it.
+
+    No test in this suite touches the network, and the fixtures exist so that
+    none has to. Trusting that is not the same as enforcing it: adding
+    `seed/topics.yaml` quietly turned the entry point tests into something that
+    bootstrapped three topics and fetched seven live feeds, and nothing failed.
+    A suite that silently depends on the network is one that breaks on a train,
+    and a recorded fixture that has stopped matching reality is a bug this
+    would otherwise hide.
+
+    These wrappers are typed loosely on purpose. They stand in front of C
+    functions whose real signatures they only pass through.
+
+    Loopback stays open, because `TestClient` and the SMTP stub are local.
+    """
+
+    def guard_connect(self: Any, address: Any, *args: Any, **kwargs: Any) -> Any:
+        host = _host_of(address)
+        if host not in _LOCAL_HOSTS:
+            raise _refuse(host, "reach")
+        return _real_connect(self, address, *args, **kwargs)
+
+    def guard_connect_ex(self: Any, address: Any, *args: Any, **kwargs: Any) -> Any:
+        host = _host_of(address)
+        if host not in _LOCAL_HOSTS:
+            raise _refuse(host, "reach")
+        return _real_connect_ex(self, address, *args, **kwargs)
+
+    def guard_dns(host: Any, *args: Any, **kwargs: Any) -> Any:
+        if host is not None and str(host) not in _LOCAL_HOSTS:
+            raise _refuse(repr(host), "resolve")
+        return _real_getaddrinfo(host, *args, **kwargs)
+
+    socket.socket.connect = guard_connect  # type: ignore[method-assign]
+    socket.socket.connect_ex = guard_connect_ex  # type: ignore[method-assign]
+    socket.getaddrinfo = guard_dns
+    try:
+        yield
+    finally:
+        socket.socket.connect = _real_connect  # type: ignore[method-assign]
+        socket.socket.connect_ex = _real_connect_ex  # type: ignore[method-assign]
+        socket.getaddrinfo = _real_getaddrinfo
+
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

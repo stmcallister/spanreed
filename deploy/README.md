@@ -168,7 +168,22 @@ The PVC is `local-path`, which means it is a directory on one node and it is
 not backed up. The briefs are small and the items are disposable, but the
 topics and sources are configuration you typed by hand.
 
-`seed/topics.yaml` bootstraps an empty database on first run, and
-`newsbrief export-topics` dumps the live configuration back to YAML so it can
-be committed. Neither exists yet. Until they do, the topics and sources live
-only on that node, so take a copy of `newsbrief.db` after you configure it.
+`seed/topics.yaml` bootstraps an empty database on first run. It is read once,
+on a database with no topics at all, and ignored from then on. The image
+carries it at `/app/seed/topics.yaml`, which is what `SEED_PATH` points at.
+
+To capture the live configuration, go the other way:
+
+```sh
+kubectl exec -n newsbrief deploy/newsbrief-web -- \
+  python -m newsbrief export-topics > seed/topics.yaml
+```
+
+That writes YAML to stdout, with its logs on stderr so the redirect stays
+clean, and the file it produces is one this same bootstrap can read back. Cache
+bookkeeping such as ETags is left out, because it is worthless to a database
+being restored. Commit the result and a lost volume costs a rebuild rather than
+retyping every relevance hint.
+
+The command is read only. It does not bootstrap, so exporting from an empty
+database gives you an empty file rather than the seed reflected back.

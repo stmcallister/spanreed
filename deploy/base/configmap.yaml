@@ -8,6 +8,7 @@ metadata:
   name: newsbrief-config
 data:
   DB_PATH: /data/newsbrief.db
+  SEED_PATH: /app/seed/topics.yaml
   LOG_LEVEL: INFO
   RENDER_TIMEZONE: America/Los_Angeles
 

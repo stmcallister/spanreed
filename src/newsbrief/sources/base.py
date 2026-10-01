@@ -34,6 +34,14 @@ FEED_ACCEPT = (
 )
 
 
+BOOKKEEPING_FIELDS = frozenset({"etag", "last_modified"})
+"""Written by the collector after a fetch. Cache state, not user settings.
+
+The source editor hides these, and exporting configuration leaves them out,
+because an ETag is worth nothing to a database being restored from YAML.
+"""
+
+
 # Every adapter names its own class attribute `type`, which shadows the builtin
 # inside those class bodies. Annotations use this alias instead.
 ConfigModelType = type[BaseModel]

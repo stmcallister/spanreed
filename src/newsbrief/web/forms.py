@@ -15,9 +15,7 @@ from typing import Any
 from pydantic import BaseModel, ValidationError
 
 from newsbrief.sources import CONFIG_MODELS
-
-BOOKKEEPING_FIELDS = frozenset({"etag", "last_modified"})
-"""Written by the collector after a fetch. Cache state, not user settings."""
+from newsbrief.sources.base import BOOKKEEPING_FIELDS
 
 # What a field is called on screen, where the attribute name is not enough.
 LABELS: Mapping[str, str] = {

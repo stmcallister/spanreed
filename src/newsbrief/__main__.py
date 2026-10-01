@@ -9,27 +9,57 @@ from __future__ import annotations
 import logging
 import sys
 from collections.abc import Sequence
+from typing import TextIO, cast
 
 import structlog
 
 from newsbrief import db
 from newsbrief.config import Settings, get_settings
 
-COMMANDS = ("collect", "compose", "web")
+COMMANDS = ("collect", "compose", "web", "export-topics")
+
+READ_ONLY_COMMANDS = frozenset({"export-topics"})
+"""Commands that must not bootstrap, and must not log onto stdout."""
 
 USAGE = f"""usage: python -m newsbrief <command>
 
 commands:
   {"  ".join(COMMANDS)}
 
-  collect   fetch every enabled source and store new items
-  compose   cluster, filter, write, and deliver today's brief
-  web       serve the management UI and JSON API
+  collect        fetch every enabled source and store new items
+  compose        cluster, filter, write, and deliver today's brief
+  web            serve the management UI and JSON API
+  export-topics  dump topics and sources to stdout as YAML
+
+An empty database is seeded from SEED_PATH on first start. Once a topic
+exists the seed file is never consulted again.
 """
 
 
-def configure_logging(level: str) -> None:
-    """Structured JSON logging to stdout, which is all the cluster needs."""
+class _Stderr:
+    """A stand in for stderr that resolves the stream when it writes.
+
+    structlog holds whatever file it is configured with for the life of the
+    process. Handing it `sys.stderr` directly captures that object, and
+    anything that later replaces the stream, a supervisor, a wrapper, or
+    pytest's capture, leaves the logger writing to a handle that has since been
+    closed. Looking it up per write costs nothing and cannot go stale.
+    """
+
+    def write(self, message: str) -> int:
+        return sys.stderr.write(message)
+
+    def flush(self) -> None:
+        sys.stderr.flush()
+
+
+def configure_logging(level: str, *, to_stderr: bool = False) -> None:
+    """Structured JSON logging to stdout, which is all the cluster needs.
+
+    `export-topics` sends it to stderr instead, because its stdout is the YAML
+    and a log line in the middle of that would corrupt the file somebody is
+    redirecting it into.
+    """
     level_number = logging.getLevelNamesMapping().get(level.upper(), logging.INFO)
     structlog.configure(
         processors=[
@@ -41,7 +71,11 @@ def configure_logging(level: str) -> None:
             structlog.processors.JSONRenderer(),
         ],
         wrapper_class=structlog.make_filtering_bound_logger(level_number),
-        logger_factory=structlog.PrintLoggerFactory(),
+        # structlog annotates this as TextIO but only ever calls write and
+        # flush on it, which is all the proxy above provides.
+        logger_factory=structlog.PrintLoggerFactory(
+            file=cast(TextIO, _Stderr()) if to_stderr else None
+        ),
         cache_logger_on_first_use=True,
     )
 
@@ -53,6 +87,37 @@ def run_migrations(settings: Settings) -> int:
         return db.migrate(conn)
     finally:
         conn.close()
+
+
+def bootstrap_topics(settings: Settings) -> None:
+    """Seed an empty database. Never fails the start.
+
+    Configuration that could not be read is worth a loud log line and is not
+    worth refusing to run over, because the UI can still be used to enter it.
+    """
+    from newsbrief import seed
+
+    conn = db.connect(settings.db_path)
+    try:
+        seed.bootstrap(conn, settings.seed_path)
+    except Exception:
+        structlog.get_logger("newsbrief").exception(
+            "could not bootstrap from the seed file", seed_path=str(settings.seed_path)
+        )
+    finally:
+        conn.close()
+
+
+def export_topics(settings: Settings) -> int:
+    """Write the live configuration to stdout as YAML."""
+    from newsbrief import seed
+
+    conn = db.connect(settings.db_path)
+    try:
+        sys.stdout.write(seed.export(conn))
+    finally:
+        conn.close()
+    return 0
 
 
 def dispatch(command: str, settings: Settings) -> int:
@@ -76,6 +141,9 @@ def dispatch(command: str, settings: Settings) -> int:
 
         return run_web(settings)
 
+    if command == "export-topics":
+        return export_topics(settings)
+
     raise AssertionError(f"unhandled command: {command}")
 
 
@@ -92,7 +160,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2
 
     settings = get_settings()
-    configure_logging(settings.log_level)
+    read_only = command in READ_ONLY_COMMANDS
+    configure_logging(settings.log_level, to_stderr=read_only)
     log = structlog.get_logger("newsbrief")
 
     try:
@@ -107,6 +176,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         db_path=str(settings.db_path),
         schema_version=schema_version,
     )
+
+    if not read_only:
+        bootstrap_topics(settings)
 
     try:
         return dispatch(command, settings)

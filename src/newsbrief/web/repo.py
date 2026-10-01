@@ -8,22 +8,19 @@ visible rather than scattered through request handlers.
 from __future__ import annotations
 
 import json
-import re
 import sqlite3
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 from newsbrief import db
-from newsbrief.models import Brief, Item, Source, Topic
+from newsbrief.models import Brief, Item, Source, Topic, slugify
 
 ACTIVITY_WINDOW_DAYS = 7
 """The item count on the topics list, which is how you spot a dead topic."""
 
 MAX_CONSECUTIVE_FAILURES = 20
 """Matches the collector. A source at this count has been auto disabled."""
-
-_SLUG_STRIP = re.compile(r"[^a-z0-9]+")
 
 
 @dataclass(slots=True)
@@ -54,12 +51,6 @@ class SourceHealth:
         return not self.source.enabled and self.source.consecutive_failures >= (
             MAX_CONSECUTIVE_FAILURES
         )
-
-
-def slugify(name: str) -> str:
-    """A URL safe name. Uniqueness is the database's job, not this function's."""
-    slug = _SLUG_STRIP.sub("-", name.strip().lower()).strip("-")
-    return slug or "topic"
 
 
 # --- topics -----------------------------------------------------------------

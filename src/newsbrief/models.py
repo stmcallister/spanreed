@@ -8,6 +8,7 @@ rest of the code something typed to pass around, nothing more.
 from __future__ import annotations
 
 import json
+import re
 import sqlite3
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -15,6 +16,20 @@ from typing import Literal
 
 TopicKind = Literal["team", "tech"]
 FetchStatus = Literal["ok", "error", "skipped", "not_modified"]
+
+
+_SLUG_STRIP = re.compile(r"[^a-z0-9]+")
+
+
+def slugify(name: str) -> str:
+    """A URL safe name for a topic.
+
+    Uniqueness is the database's job, not this function's, so two topics whose
+    names slug the same way collide on the UNIQUE constraint rather than being
+    silently renamed here.
+    """
+    slug = _SLUG_STRIP.sub("-", name.strip().lower()).strip("-")
+    return slug or "topic"
 
 
 @dataclass(slots=True)
