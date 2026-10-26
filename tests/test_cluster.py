@@ -7,9 +7,9 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from newsbrief import collect, db
-from newsbrief.compose import cluster
-from newsbrief.models import Item
+from spanreed import collect, db
+from spanreed.compose import cluster
+from spanreed.models import Item
 from tests.conftest import add_source, add_topic
 
 NOW = datetime(2026, 9, 1, 12, 0, 0, tzinfo=UTC)

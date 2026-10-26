@@ -6,8 +6,8 @@ import httpx
 import pytest
 import respx
 
-from newsbrief.sources import discovery
-from newsbrief.sources.discovery import declared_feeds, discover, normalize_site_url, probe_paths
+from spanreed.sources import discovery
+from spanreed.sources.discovery import declared_feeds, discover, normalize_site_url, probe_paths
 from tests.conftest import fixture_bytes
 
 SITE = "https://example.test/"

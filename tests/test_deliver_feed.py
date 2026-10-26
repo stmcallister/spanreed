@@ -9,13 +9,13 @@ from xml.etree import ElementTree
 import pytest
 from fastapi.testclient import TestClient
 
-from newsbrief.config import Settings
-from newsbrief.deliver import feed
-from newsbrief.models import Brief
-from newsbrief.web import repo
-from newsbrief.web.app import create_app
+from spanreed.config import Settings
+from spanreed.deliver import feed
+from spanreed.models import Brief
+from spanreed.web import repo
+from spanreed.web.app import create_app
 
-BASE = "http://newsbrief.test/"
+BASE = "http://spanreed.test/"
 
 
 @pytest.fixture
@@ -78,7 +78,7 @@ def test_an_empty_archive_is_still_a_valid_feed() -> None:
     """A reader subscribing before the first brief should not get a parse error."""
     found = channel(feed.build([], BASE))
 
-    assert found.findtext("title") == "newsbrief"
+    assert found.findtext("title") == "spanreed"
     assert found.findall("item") == []
 
 
@@ -93,7 +93,7 @@ def test_links_are_absolute() -> None:
     item = channel(feed.build([make_brief()], BASE)).find("item")
 
     assert item is not None
-    assert item.findtext("link") == "http://newsbrief.test/briefs/2026-09-28"
+    assert item.findtext("link") == "http://spanreed.test/briefs/2026-09-28"
 
 
 def test_the_guid_is_the_permalink() -> None:
@@ -103,7 +103,7 @@ def test_the_guid_is_the_permalink() -> None:
     guid = item.find("guid")
     assert guid is not None
     assert guid.get("isPermaLink") == "true"
-    assert guid.text == "http://newsbrief.test/briefs/2026-09-28"
+    assert guid.text == "http://spanreed.test/briefs/2026-09-28"
 
 
 def test_dates_are_rfc_822_not_iso() -> None:
@@ -213,7 +213,7 @@ def test_the_feed_needs_the_same_credential_as_the_rest(secured_web: TestClient)
 def test_the_feed_is_reachable_with_the_credential(secured_web: TestClient) -> None:
     import base64
 
-    token = base64.b64encode(b"newsbrief:hunter2").decode()
+    token = base64.b64encode(b"spanreed:hunter2").decode()
     response = secured_web.get("/feed.xml", headers={"Authorization": f"Basic {token}"})
 
     assert response.status_code == 200

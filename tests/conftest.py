@@ -13,11 +13,11 @@ from typing import Any
 import httpx
 import pytest
 
-from newsbrief import db
-from newsbrief.config import Settings
-from newsbrief.llm import Usage
-from newsbrief.models import Topic
-from newsbrief.sources.base import build_client
+from spanreed import db
+from spanreed.config import Settings
+from spanreed.llm import Usage
+from spanreed.models import Topic
+from spanreed.sources.base import build_client
 
 _LOCAL_HOSTS = frozenset({"127.0.0.1", "::1", "localhost", ""})
 
@@ -93,7 +93,7 @@ def fixture_bytes(name: str) -> bytes:
 
 @pytest.fixture
 def settings(tmp_path: Path) -> Settings:
-    return Settings(db_path=tmp_path / "newsbrief.db", anthropic_api_key=None)
+    return Settings(db_path=tmp_path / "spanreed.db", anthropic_api_key=None)
 
 
 @pytest.fixture

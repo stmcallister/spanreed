@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import sqlite3
 
-from newsbrief import db
-from newsbrief.compose.filter import Scored
-from newsbrief.deliver import archive
+from spanreed import db
+from spanreed.compose.filter import Scored
+from spanreed.deliver import archive
 from tests.conftest import NOW, add_source, add_topic, make_topic
 from tests.test_cluster import insert_item, make_item
 

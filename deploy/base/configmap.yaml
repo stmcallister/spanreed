@@ -5,9 +5,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: newsbrief-config
+  name: spanreed-config
 data:
-  DB_PATH: /data/newsbrief.db
+  DB_PATH: /data/spanreed.db
   SEED_PATH: /app/seed/topics.yaml
   LOG_LEVEL: INFO
   RENDER_TIMEZONE: America/Los_Angeles
@@ -21,8 +21,8 @@ data:
   WRITE_MODEL: claude-sonnet-5
 
   HTTP_TIMEOUT_SECONDS: "15"
-  USER_AGENT: "newsbrief/1.0 (+https://github.com/stmcallister/newsbrief)"
+  USER_AGENT: "spanreed/1.0 (+https://github.com/stmcallister/spanreed)"
 
   WEB_HOST: 0.0.0.0
   WEB_PORT: "8000"
-  BASIC_AUTH_USER: newsbrief
+  BASIC_AUTH_USER: spanreed

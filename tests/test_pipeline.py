@@ -13,10 +13,10 @@ import httpx
 import pytest
 import respx
 
-from newsbrief import db
-from newsbrief import llm as llm_module
-from newsbrief.compose import pipeline
-from newsbrief.config import Settings
+from spanreed import db
+from spanreed import llm as llm_module
+from spanreed.compose import pipeline
+from spanreed.config import Settings
 from tests.conftest import NOW, StubLlm, add_source, add_topic
 from tests.test_cluster import insert_item, make_item
 
@@ -309,7 +309,7 @@ def test_purging_keeps_the_briefs(populated: sqlite3.Connection, offline: Settin
 def test_the_brief_is_emailed_after_it_is_archived(
     populated: sqlite3.Connection, offline: Settings, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    from newsbrief.deliver import email as email_module
+    from spanreed.deliver import email as email_module
 
     sent: list[dict[str, object]] = []
 
@@ -335,7 +335,7 @@ def test_a_failed_delivery_does_not_lose_the_brief(
     populated: sqlite3.Connection, offline: Settings, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Archive first, then email. That ordering is the whole point."""
-    from newsbrief.deliver import email as email_module
+    from spanreed.deliver import email as email_module
 
     def explode(settings: Settings, **kwargs: object) -> email_module.DeliveryResult:
         return email_module.DeliveryResult(status="failed", error="connection refused")
@@ -353,7 +353,7 @@ def test_a_failed_delivery_does_not_lose_the_brief(
 def test_a_degraded_brief_is_flagged_to_the_mailer(
     populated: sqlite3.Connection, offline: Settings, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    from newsbrief.deliver import email as email_module
+    from spanreed.deliver import email as email_module
 
     seen: list[object] = []
 

@@ -12,10 +12,10 @@ import pytest
 import respx
 from fastapi.testclient import TestClient
 
-from newsbrief import db
-from newsbrief.config import Settings
-from newsbrief.web import repo
-from newsbrief.web.app import create_app
+from spanreed import db
+from spanreed.config import Settings
+from spanreed.web import repo
+from spanreed.web.app import create_app
 from tests.conftest import NOW, add_source, add_topic, fixture_bytes
 
 FEED_URL = "https://arstechnica.com/feed/"
@@ -51,11 +51,11 @@ def test_an_unauthenticated_request_is_challenged(secured: TestClient) -> None:
 
 
 def test_the_right_credential_gets_in(secured: TestClient) -> None:
-    assert secured.get("/", headers=basic("newsbrief", "hunter2")).status_code == 200
+    assert secured.get("/", headers=basic("spanreed", "hunter2")).status_code == 200
 
 
 def test_a_wrong_password_is_rejected(secured: TestClient) -> None:
-    assert secured.get("/", headers=basic("newsbrief", "wrong")).status_code == 401
+    assert secured.get("/", headers=basic("spanreed", "wrong")).status_code == 401
 
 
 def test_a_wrong_user_is_rejected(secured: TestClient) -> None:
@@ -569,7 +569,7 @@ def test_generate_now_runs_the_composer(
     client: TestClient, conn: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """The same code path the CronJob takes, degraded paths included."""
-    from newsbrief import llm as llm_module
+    from spanreed import llm as llm_module
 
     monkeypatch.setattr(llm_module, "build", lambda _settings: None)
     add_topic(conn)
@@ -640,7 +640,7 @@ def test_discovery_on_a_topic_that_is_gone_is_a_404(client: TestClient) -> None:
 def test_every_registered_adapter_has_an_editor_form(client: TestClient) -> None:
     """The form is read off each adapter's config model, so a new adapter gets
     its fields without anybody editing a template."""
-    from newsbrief.sources import CONFIG_MODELS
+    from spanreed.sources import CONFIG_MODELS
 
     for source_type in CONFIG_MODELS:
         page = client.get("/sources/fields", params={"type": source_type}).text

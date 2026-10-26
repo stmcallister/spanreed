@@ -13,8 +13,8 @@ import pytest
 import respx
 from pydantic import ValidationError
 
-from newsbrief.sources.base import parse_feed, title_from_summary
-from newsbrief.sources.bluesky import BlueskyAdapter, BlueskyConfig, build_url
+from spanreed.sources.base import parse_feed, title_from_summary
+from spanreed.sources.bluesky import BlueskyAdapter, BlueskyConfig, build_url
 from tests.conftest import fixture_bytes
 
 HANDLE = "jay.bsky.team"
@@ -133,7 +133,7 @@ def test_a_deleted_profile_raises_for_the_collector_to_record(client: httpx.Clie
 
 
 def test_the_wrong_config_type_is_a_bug(client: httpx.Client) -> None:
-    from newsbrief.sources.rss import RssConfig
+    from spanreed.sources.rss import RssConfig
 
     with pytest.raises(TypeError):
         BlueskyAdapter(client).fetch(RssConfig(url="https://a.example/feed"), ANCIENT)

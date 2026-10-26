@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "newsbrief"
+name = "spanreed"
 version = "0.1.0"
 description = "Personal daily news brief"
 requires-python = ">=3.12"
@@ -33,10 +33,10 @@ dev = [
 ]
 
 [project.scripts]
-newsbrief = "newsbrief.__main__:main"
+spanreed = "spanreed.__main__:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/newsbrief"]
+packages = ["src/spanreed"]
 
 [tool.ruff]
 line-length = 100

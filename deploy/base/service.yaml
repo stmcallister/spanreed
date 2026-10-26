@@ -1,14 +1,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: newsbrief-web
+  name: spanreed-web
   labels:
-    app.kubernetes.io/name: newsbrief
+    app.kubernetes.io/name: spanreed
     app.kubernetes.io/component: web
 spec:
   type: ClusterIP
   selector:
-    app.kubernetes.io/name: newsbrief
+    app.kubernetes.io/name: spanreed
     app.kubernetes.io/component: web
   ports:
     - name: http

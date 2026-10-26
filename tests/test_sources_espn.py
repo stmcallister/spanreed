@@ -14,7 +14,7 @@ import pytest
 import respx
 from pydantic import ValidationError
 
-from newsbrief.sources.espn import EspnAdapter, EspnConfig, parse_events
+from spanreed.sources.espn import EspnAdapter, EspnConfig, parse_events
 from tests.conftest import fixture_bytes
 
 SPORT, LEAGUE, TEAM = "soccer", "usa.1", "9726"
@@ -296,7 +296,7 @@ def test_older_events_are_dropped(client: httpx.Client) -> None:
 
 
 def test_the_wrong_config_type_is_a_bug_not_a_degradation(client: httpx.Client) -> None:
-    from newsbrief.sources.rss import RssConfig
+    from spanreed.sources.rss import RssConfig
 
     with pytest.raises(TypeError):
         EspnAdapter(client).fetch(RssConfig(url="https://a.example/feed"), ANCIENT)

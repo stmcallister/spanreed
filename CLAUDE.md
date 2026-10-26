@@ -1,4 +1,4 @@
-# newsbrief
+# spanreed
 
 Personal daily news brief. Gathers items about a configured set of topics (sports teams and tech subjects), filters them for relevance, and produces one short brief each morning. A small web UI manages the topics and sources so adding a new interest does not require a code change or a redeploy.
 
@@ -78,7 +78,7 @@ The HTMX choice is deliberate. This UI is a handful of forms. A React build step
 ├── CLAUDE.md
 ├── pyproject.toml
 ├── Dockerfile
-├── src/newsbrief/
+├── src/spanreed/
 │   ├── __main__.py           # entrypoint dispatch: collect | compose | web
 │   ├── config.py
 │   ├── db.py                 # connection, pragmas, migration runner
@@ -212,7 +212,7 @@ CREATE TABLE fetch_log (
 CREATE INDEX idx_fetch_log_source ON fetch_log(source_id, run_at DESC);
 ```
 
-**The database is the source of truth for topics.** `seed/topics.yaml` exists only to bootstrap an empty database on first run. Once the UI writes a topic, the YAML is stale and irrelevant. Provide `newsbrief export-topics` that dumps the current topics and sources back to YAML so that configuration is recoverable if the PVC is lost. Do not attempt to write back to git from the running application.
+**The database is the source of truth for topics.** `seed/topics.yaml` exists only to bootstrap an empty database on first run. Once the UI writes a topic, the YAML is stale and irrelevant. Provide `spanreed export-topics` that dumps the current topics and sources back to YAML so that configuration is recoverable if the PVC is lost. Do not attempt to write back to git from the running application.
 
 Retention: delete items older than 60 days at the end of each composer run. Keep briefs forever, they are small.
 
@@ -257,7 +257,7 @@ https://site.api.espn.com/apis/site/v2/sports/{sport}/{league}/scoreboard
 Parse defensively with `.get()` chains throughout. Assume the shape will change without warning. Emit completed results and upcoming fixtures as items with a synthetic title such as `Final: Team A 2, Team B 1`. Set `published_at` from the event date, not from fetch time.
 
 ### reddit
-Config: `{"subreddit": "...", "listing": "top", "window": "day"}`, producing `https://reddit.com/r/{sub}/{listing}/.rss?t={window}`. **A descriptive User-Agent is mandatory** or requests will be blocked. Use `newsbrief/1.0 (+https://github.com/stmcallister/newsbrief)`. Rate limit to one request every two seconds across all Reddit sources.
+Config: `{"subreddit": "...", "listing": "top", "window": "day"}`, producing `https://reddit.com/r/{sub}/{listing}/.rss?t={window}`. **A descriptive User-Agent is mandatory** or requests will be blocked. Use `spanreed/1.0 (+https://github.com/stmcallister/spanreed)`. Rate limit to one request every two seconds across all Reddit sources.
 
 ### bluesky
 Config: `{"handle": "..."}`, producing `https://bsky.app/profile/{handle}/rss`. Often the only machine-readable output a small club publishes.
@@ -386,7 +386,7 @@ Kustomize with `deploy/base` and `deploy/overlays/kholinar`, structured so ArgoC
 
 One image, three entrypoints:
 ```yaml
-command: ["python", "-m", "newsbrief"]
+command: ["python", "-m", "spanreed"]
 args: ["collect"]     # or "compose" or "web"
 ```
 

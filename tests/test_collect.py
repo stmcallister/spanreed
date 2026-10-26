@@ -10,9 +10,9 @@ import httpx
 import pytest
 import respx
 
-from newsbrief import collect
-from newsbrief.config import Settings
-from newsbrief.models import RawItem
+from spanreed import collect
+from spanreed.config import Settings
+from spanreed.models import RawItem
 from tests.conftest import add_source, add_topic, fixture_bytes
 
 FEED_URL = "https://arstechnica.com/feed/"
@@ -363,7 +363,7 @@ def test_run_exits_nonzero_when_the_database_cannot_be_opened(
 ) -> None:
     blocker = tmp_path_factory.mktemp("blocked") / "blocker"
     blocker.write_text("not a directory")
-    settings = Settings(db_path=blocker / "newsbrief.db")
+    settings = Settings(db_path=blocker / "spanreed.db")
     assert collect.run(settings) == 1
 
 

@@ -7,9 +7,9 @@ from typing import Any, ClassVar
 
 import pytest
 
-from newsbrief.config import Settings
-from newsbrief.deliver import email
-from newsbrief.deliver.email import parse_recipients, subject_for
+from spanreed.config import Settings
+from spanreed.deliver import email
+from spanreed.deliver.email import parse_recipients, subject_for
 
 MARKDOWN = "## Rust\n\n- [A story](https://a.example/1) It happened."
 HTML = "<h2>Rust</h2>\n<ul><li>It happened.</li></ul>"
@@ -115,11 +115,11 @@ def test_recipients_are_parsed(value: str | None, expected: tuple[str, ...]) -> 
 
 
 def test_the_subject_carries_the_date() -> None:
-    assert subject_for("2026-09-28", False) == "newsbrief 2026-09-28"
+    assert subject_for("2026-09-28", False) == "spanreed 2026-09-28"
 
 
 def test_a_degraded_brief_says_so_before_it_is_opened() -> None:
-    assert subject_for("2026-09-28", True) == "newsbrief 2026-09-28 (degraded)"
+    assert subject_for("2026-09-28", True) == "spanreed 2026-09-28 (degraded)"
 
 
 def test_the_message_carries_both_a_text_and_an_html_part() -> None:

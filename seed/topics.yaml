@@ -6,8 +6,8 @@
 #
 # To recover configuration after a lost volume, go the other way:
 #
-#   kubectl exec deploy/newsbrief-web -n newsbrief -- \
-#     python -m newsbrief export-topics > seed/topics.yaml
+#   kubectl exec deploy/spanreed-web -n spanreed -- \
+#     python -m spanreed export-topics > seed/topics.yaml
 #
 # Replace these with your own. They are here to show the shape and to make the
 # relevance hint concrete, because that field is the most important input in

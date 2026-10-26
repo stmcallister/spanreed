@@ -8,12 +8,12 @@ from pathlib import Path
 
 import pytest
 
-from newsbrief import db
+from spanreed import db
 
 
 @pytest.fixture
 def db_path(tmp_path: Path) -> Path:
-    return tmp_path / "nested" / "newsbrief.db"
+    return tmp_path / "nested" / "spanreed.db"
 
 
 @pytest.mark.parametrize(

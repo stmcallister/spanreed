@@ -9,7 +9,7 @@ import pytest
 import respx
 from pydantic import ValidationError
 
-from newsbrief.sources.rsshub import (
+from spanreed.sources.rsshub import (
     RsshubAdapter,
     RsshubConfig,
     RsshubUnconfiguredError,
@@ -18,7 +18,7 @@ from newsbrief.sources.rsshub import (
 from tests.conftest import fixture_bytes
 
 BASE = "https://rsshub.example"
-ROUTE = "/github/issue/stmcallister/newsbrief"
+ROUTE = "/github/issue/stmcallister/spanreed"
 ANCIENT = datetime(2000, 1, 1, tzinfo=UTC)
 CONFIG = RsshubConfig(route=ROUTE)
 
@@ -74,7 +74,7 @@ def test_an_unconfigured_base_url_raises_the_skip_signal(client: httpx.Client) -
 def test_the_base_url_falls_back_to_settings(
     client: httpx.Client, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    from newsbrief.config import get_settings
+    from spanreed.config import get_settings
 
     monkeypatch.setenv("RSSHUB_BASE_URL", BASE)
     get_settings.cache_clear()
@@ -102,7 +102,7 @@ def test_a_truncated_response_yields_fewer_items(client: httpx.Client) -> None:
 
 
 def test_the_wrong_config_type_is_a_bug(client: httpx.Client) -> None:
-    from newsbrief.sources.rss import RssConfig
+    from spanreed.sources.rss import RssConfig
 
     with pytest.raises(TypeError):
         RsshubAdapter(client, base_url=BASE).fetch(RssConfig(url="https://a.example/feed"), ANCIENT)

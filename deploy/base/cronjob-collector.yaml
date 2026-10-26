@@ -6,9 +6,9 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: newsbrief-collector
+  name: spanreed-collector
   labels:
-    app.kubernetes.io/name: newsbrief
+    app.kubernetes.io/name: spanreed
     app.kubernetes.io/component: collector
 spec:
   schedule: "0 */3 * * *"
@@ -25,12 +25,12 @@ spec:
       template:
         metadata:
           labels:
-            app.kubernetes.io/name: newsbrief
+            app.kubernetes.io/name: spanreed
             app.kubernetes.io/component: collector
         spec:
           restartPolicy: Never
           nodeSelector:
-            newsbrief.stmcallister.dev/data-node: "true"
+            spanreed.stmcallister.dev/data-node: "true"
           securityContext:
             runAsNonRoot: true
             runAsUser: 1000
@@ -38,15 +38,15 @@ spec:
             fsGroup: 1000
           containers:
             - name: collect
-              image: ghcr.io/stmcallister/newsbrief:latest
+              image: ghcr.io/stmcallister/spanreed:latest
               imagePullPolicy: IfNotPresent
-              command: ["python", "-m", "newsbrief"]
+              command: ["python", "-m", "spanreed"]
               args: ["collect"]
               envFrom:
                 - configMapRef:
-                    name: newsbrief-config
+                    name: spanreed-config
                 - secretRef:
-                    name: newsbrief-secrets
+                    name: spanreed-secrets
               volumeMounts:
                 - name: data
                   mountPath: /data
@@ -67,6 +67,6 @@ spec:
           volumes:
             - name: data
               persistentVolumeClaim:
-                claimName: newsbrief-data
+                claimName: spanreed-data
             - name: tmp
               emptyDir: {}

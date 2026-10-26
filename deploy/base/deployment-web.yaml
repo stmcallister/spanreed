@@ -2,9 +2,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: newsbrief-web
+  name: spanreed-web
   labels:
-    app.kubernetes.io/name: newsbrief
+    app.kubernetes.io/name: spanreed
     app.kubernetes.io/component: web
 spec:
   replicas: 1
@@ -14,17 +14,17 @@ spec:
     type: Recreate
   selector:
     matchLabels:
-      app.kubernetes.io/name: newsbrief
+      app.kubernetes.io/name: spanreed
       app.kubernetes.io/component: web
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: newsbrief
+        app.kubernetes.io/name: spanreed
         app.kubernetes.io/component: web
     spec:
       # Pinned to the node holding the ReadWriteOnce volume.
       nodeSelector:
-        newsbrief.stmcallister.dev/data-node: "true"
+        spanreed.stmcallister.dev/data-node: "true"
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
@@ -33,18 +33,18 @@ spec:
         fsGroup: 1000
       containers:
         - name: web
-          image: ghcr.io/stmcallister/newsbrief:latest
+          image: ghcr.io/stmcallister/spanreed:latest
           imagePullPolicy: IfNotPresent
-          command: ["python", "-m", "newsbrief"]
+          command: ["python", "-m", "spanreed"]
           args: ["web"]
           ports:
             - name: http
               containerPort: 8000
           envFrom:
             - configMapRef:
-                name: newsbrief-config
+                name: spanreed-config
             - secretRef:
-                name: newsbrief-secrets
+                name: spanreed-secrets
           volumeMounts:
             - name: data
               mountPath: /data
@@ -81,6 +81,6 @@ spec:
       volumes:
         - name: data
           persistentVolumeClaim:
-            claimName: newsbrief-data
+            claimName: spanreed-data
         - name: tmp
           emptyDir: {}

@@ -14,8 +14,8 @@ from typing import Any
 import pytest
 import yaml
 
-from newsbrief import seed
-from newsbrief.models import slugify
+from spanreed import seed
+from spanreed.models import slugify
 from tests.conftest import add_source, add_topic
 
 SEED = """
@@ -316,7 +316,7 @@ def configuration(conn: sqlite3.Connection) -> tuple[list[Any], list[Any]]:
 
 def test_export_round_trips_into_a_fresh_database(conn: sqlite3.Connection, tmp_path: Path) -> None:
     """This is the whole point: a lost volume must be recoverable from the file."""
-    from newsbrief import db
+    from spanreed import db
 
     seed.bootstrap(conn, write(tmp_path, SEED))
     # The collector has been running, so the sources carry cache state now.

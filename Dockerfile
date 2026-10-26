@@ -1,4 +1,4 @@
-# One image, three entrypoints. The command is always `python -m newsbrief` and
+# One image, three entrypoints. The command is always `python -m spanreed` and
 # the argument picks the workload: collect, compose, or web.
 #
 # Two stages so the runtime image carries no pip, no wheels, and no build
@@ -29,11 +29,11 @@ FROM python:3.12-slim
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH="/opt/venv/bin:$PATH" \
-    DB_PATH=/data/newsbrief.db
+    DB_PATH=/data/spanreed.db
 
 # Non-root, with a fixed uid so the PVC's fsGroup can be set to match.
-RUN groupadd --gid 1000 newsbrief \
-    && useradd --uid 1000 --gid 1000 --no-create-home --shell /usr/sbin/nologin newsbrief \
+RUN groupadd --gid 1000 spanreed \
+    && useradd --uid 1000 --gid 1000 --no-create-home --shell /usr/sbin/nologin spanreed \
     && mkdir -p /data \
     && chown 1000:1000 /data
 
@@ -49,4 +49,4 @@ EXPOSE 8000
 
 # No default argument. Every workload states which one it is, so a manifest
 # that forgets to say fails loudly instead of quietly serving the wrong thing.
-ENTRYPOINT ["python", "-m", "newsbrief"]
+ENTRYPOINT ["python", "-m", "spanreed"]

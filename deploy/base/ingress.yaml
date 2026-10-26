@@ -2,18 +2,18 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: newsbrief-web
+  name: spanreed-web
   labels:
-    app.kubernetes.io/name: newsbrief
+    app.kubernetes.io/name: spanreed
 spec:
   rules:
-    - host: newsbrief.example
+    - host: spanreed.example
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: newsbrief-web
+                name: spanreed-web
                 port:
                   name: http

@@ -9,7 +9,7 @@ import pytest
 import respx
 from pydantic import ValidationError
 
-from newsbrief.sources.google_news import GoogleNewsAdapter, GoogleNewsConfig, build_url
+from spanreed.sources.google_news import GoogleNewsAdapter, GoogleNewsConfig, build_url
 from tests.conftest import fixture_bytes
 
 ANCIENT = datetime(2000, 1, 1, tzinfo=UTC)
@@ -154,7 +154,7 @@ def test_items_older_than_since_are_dropped(client: httpx.Client) -> None:
 
 
 def test_fetch_rejects_the_wrong_config_type(client: httpx.Client) -> None:
-    from newsbrief.sources.rss import RssConfig
+    from spanreed.sources.rss import RssConfig
 
     with pytest.raises(TypeError):
         GoogleNewsAdapter(client).fetch(RssConfig(url="https://example.com/feed"), ANCIENT)

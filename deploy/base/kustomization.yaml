@@ -1,7 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: newsbrief
+namespace: spanreed
 
 resources:
   - namespace.yaml
@@ -16,9 +16,9 @@ resources:
 labels:
   - includeSelectors: false
     pairs:
-      app.kubernetes.io/part-of: newsbrief
+      app.kubernetes.io/part-of: spanreed
       app.kubernetes.io/managed-by: kustomize
 
 images:
-  - name: ghcr.io/stmcallister/newsbrief
+  - name: ghcr.io/stmcallister/spanreed
     newTag: latest

@@ -11,9 +11,9 @@ from pathlib import Path
 import pytest
 import yaml
 
-from newsbrief import db
-from newsbrief.__main__ import COMMANDS, main
-from newsbrief.config import Settings, get_settings
+from spanreed import db
+from spanreed.__main__ import COMMANDS, main
+from spanreed.config import Settings, get_settings
 
 AMBIENT_VARS = (
     "ANTHROPIC_API_KEY",
@@ -30,7 +30,7 @@ def _isolated_settings(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Itera
     """Keep the developer's real environment out of the test run."""
     for name in AMBIENT_VARS:
         monkeypatch.delenv(name, raising=False)
-    monkeypatch.setenv("DB_PATH", str(tmp_path / "newsbrief.db"))
+    monkeypatch.setenv("DB_PATH", str(tmp_path / "spanreed.db"))
     # Point the seed path at nothing. Left at its default it resolves to the
     # real seed/topics.yaml in the repo, and `main(["collect"])` would then
     # bootstrap three topics and fetch seven live feeds. No test touches the
@@ -50,12 +50,12 @@ def _do_not_actually_serve(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_settings_read_the_database_path_from_the_environment(tmp_path: Path) -> None:
-    assert get_settings().db_path == tmp_path / "newsbrief.db"
+    assert get_settings().db_path == tmp_path / "spanreed.db"
 
 
 def test_no_arguments_prints_usage_and_fails(capsys: pytest.CaptureFixture[str]) -> None:
     assert main([]) == 2
-    assert "usage: python -m newsbrief" in capsys.readouterr().out
+    assert "usage: python -m spanreed" in capsys.readouterr().out
 
 
 def test_help_succeeds(capsys: pytest.CaptureFixture[str]) -> None:
@@ -72,7 +72,7 @@ def test_unknown_command_fails(capsys: pytest.CaptureFixture[str]) -> None:
 def test_known_commands_run_migrations_first(command: str, tmp_path: Path) -> None:
     """Each command runs migrations before dispatching, even while stubbed."""
     main([command])
-    assert (tmp_path / "newsbrief.db").exists()
+    assert (tmp_path / "spanreed.db").exists()
 
 
 def test_collect_succeeds_with_no_sources_configured() -> None:
@@ -94,7 +94,7 @@ def test_the_web_command_serves() -> None:
 def test_a_broken_database_path_exits_one(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     blocker = tmp_path / "blocker"
     blocker.write_text("not a directory")
-    monkeypatch.setenv("DB_PATH", str(blocker / "newsbrief.db"))
+    monkeypatch.setenv("DB_PATH", str(blocker / "spanreed.db"))
     get_settings.cache_clear()
     assert main(["collect"]) == 1
 
@@ -122,7 +122,7 @@ def test_an_empty_database_is_seeded_on_first_start(
 
     assert main(["collect"]) == 0
 
-    conn = db.connect(tmp_path / "newsbrief.db")
+    conn = db.connect(tmp_path / "spanreed.db")
     try:
         assert [r["name"] for r in conn.execute("SELECT name FROM topics")] == ["Rust"]
     finally:
@@ -142,7 +142,7 @@ def test_a_broken_seed_file_does_not_stop_the_start(
 
 
 def add_a_topic(tmp_path: Path) -> None:
-    conn = db.connect(tmp_path / "newsbrief.db")
+    conn = db.connect(tmp_path / "spanreed.db")
     try:
         db.migrate(conn)
         with db.write_transaction(conn):
@@ -178,12 +178,12 @@ def test_export_topics_stdout_is_nothing_but_yaml(tmp_path: Path) -> None:
     add_a_topic(tmp_path)
 
     finished = subprocess.run(
-        [sys.executable, "-m", "newsbrief", "export-topics"],
+        [sys.executable, "-m", "spanreed", "export-topics"],
         capture_output=True,
         text=True,
         env={
             **os.environ,
-            "DB_PATH": str(tmp_path / "newsbrief.db"),
+            "DB_PATH": str(tmp_path / "spanreed.db"),
             "SEED_PATH": str(tmp_path / "no-such-seed.yaml"),
         },
         check=True,
@@ -214,7 +214,7 @@ def test_export_topics_does_not_bootstrap(
     assert main(["export-topics"]) == 0
 
     assert "name: Rust" not in capsys.readouterr().out
-    conn = db.connect(tmp_path / "newsbrief.db")
+    conn = db.connect(tmp_path / "spanreed.db")
     try:
         assert conn.execute("SELECT COUNT(*) AS n FROM topics").fetchone()["n"] == 0
     finally:

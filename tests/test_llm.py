@@ -7,8 +7,8 @@ from typing import Any
 import pytest
 from pydantic import BaseModel
 
-from newsbrief import llm
-from newsbrief.config import Settings
+from spanreed import llm
+from spanreed.config import Settings
 
 
 class Answer(BaseModel):

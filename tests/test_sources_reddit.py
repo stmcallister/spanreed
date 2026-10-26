@@ -11,8 +11,8 @@ import pytest
 import respx
 from pydantic import ValidationError
 
-from newsbrief.sources import reddit
-from newsbrief.sources.reddit import RedditAdapter, RedditConfig, build_url
+from spanreed.sources import reddit
+from spanreed.sources.reddit import RedditAdapter, RedditConfig, build_url
 from tests.conftest import fixture_bytes
 
 FEED_URL = "https://reddit.com/r/rust/top/.rss?t=week"
@@ -94,7 +94,7 @@ def test_the_user_agent_is_sent(client: httpx.Client) -> None:
 
     RedditAdapter(client).fetch(CONFIG, ANCIENT)
 
-    assert "newsbrief" in route.calls[0].request.headers["User-Agent"]
+    assert "spanreed" in route.calls[0].request.headers["User-Agent"]
 
 
 @respx.mock
@@ -177,7 +177,7 @@ def test_the_limit_is_shared_across_every_reddit_source(
 
 
 def test_the_wrong_config_type_is_a_bug(client: httpx.Client) -> None:
-    from newsbrief.sources.rss import RssConfig
+    from spanreed.sources.rss import RssConfig
 
     with pytest.raises(TypeError):
         RedditAdapter(client).fetch(RssConfig(url="https://a.example/feed"), ANCIENT)

@@ -6,7 +6,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: newsbrief-data
+  name: spanreed-data
 spec:
   accessModes:
     - ReadWriteOnce

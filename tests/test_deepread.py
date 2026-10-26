@@ -5,7 +5,7 @@ from __future__ import annotations
 import httpx
 import respx
 
-from newsbrief.compose import deepread
+from spanreed.compose import deepread
 from tests.test_cluster import make_item
 
 ARTICLE_URL = "https://a.example/1"

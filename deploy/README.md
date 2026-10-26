@@ -1,4 +1,4 @@
-# Deploying newsbrief
+# Deploying spanreed
 
 Kustomize, two layers. `base` is portable. `overlays/kholinar` holds the facts
 about one cluster: which node holds the volume, what hostname the UI answers
@@ -33,7 +33,7 @@ to already exist in the namespace, created by whatever mechanism this cluster
 already uses: sealed-secrets, external-secrets, SOPS, or a one time
 `kubectl create secret` done outside the GitOps flow.
 
-Name: `newsbrief-secrets`, in namespace `newsbrief`.
+Name: `spanreed-secrets`, in namespace `spanreed`.
 
 | Key | Required | What it is |
 |---|---|---|
@@ -59,18 +59,18 @@ land on the same node. The overlay pins them with
 `kubernetes.io/hostname: kholinar`.
 
 If you would rather pin by role than by hostname, `base` selects
-`newsbrief.stmcallister.dev/data-node: "true"` instead. Label the node and drop
+`spanreed.stmcallister.dev/data-node: "true"` instead. Label the node and drop
 the two nodeSelector patches from the overlay:
 
 ```sh
-kubectl label node kholinar newsbrief.stmcallister.dev/data-node=true
+kubectl label node kholinar spanreed.stmcallister.dev/data-node=true
 ```
 
 ### 3. The image
 
 ```sh
-docker build -t ghcr.io/stmcallister/newsbrief:v0.1.0 .
-docker push ghcr.io/stmcallister/newsbrief:v0.1.0
+docker build -t ghcr.io/stmcallister/spanreed:v0.1.0 .
+docker push ghcr.io/stmcallister/spanreed:v0.1.0
 ```
 
 Then bump `newTag` in `overlays/kholinar/kustomization.yaml`. That tag is the
@@ -79,7 +79,7 @@ rendering `base` on its own.
 
 ### 4. Things to edit in the overlay
 
-- the ingress host, currently `newsbrief.kholinar.ts.net`
+- the ingress host, currently `spanreed.kholinar.ts.net`
 - the ingress class, currently `traefik`, which is what k3s ships
 - the image tag
 
@@ -94,17 +94,17 @@ Application manifests live.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: newsbrief
+  name: spanreed
   namespace: argocd
 spec:
   project: default
   source:
-    repoURL: https://github.com/stmcallister/newsbrief.git
+    repoURL: https://github.com/stmcallister/spanreed.git
     targetRevision: main
     path: deploy/overlays/kholinar
   destination:
     server: https://kubernetes.default.svc
-    namespace: newsbrief
+    namespace: spanreed
   syncPolicy:
     automated:
       prune: true
@@ -117,11 +117,11 @@ spec:
 
 | Workload | Kind | Schedule | Notes |
 |---|---|---|---|
-| `newsbrief-collector` | CronJob | every 3 hours | Exits 0 even when sources fail |
-| `newsbrief-composer` | CronJob | 06:00 America/Los_Angeles | Reads only, never fetches |
-| `newsbrief-web` | Deployment | always on | Readiness on `/healthz` |
+| `spanreed-collector` | CronJob | every 3 hours | Exits 0 even when sources fail |
+| `spanreed-composer` | CronJob | 06:00 America/Los_Angeles | Reads only, never fetches |
+| `spanreed-web` | Deployment | always on | Readiness on `/healthz` |
 
-One image, three entrypoints. The command is always `python -m newsbrief` and
+One image, three entrypoints. The command is always `python -m spanreed` and
 the argument picks the workload.
 
 `activeDeadlineSeconds` matters more than it looks on both CronJobs. Without
@@ -157,7 +157,7 @@ carries the whole brief rather than a link to it. Readers that accept a
 credential in the URL can subscribe:
 
 ```
-https://newsbrief:PASSWORD@newsbrief.kholinar.ts.net/feed.xml
+https://spanreed:PASSWORD@spanreed.kholinar.ts.net/feed.xml
 ```
 
 ---
@@ -175,8 +175,8 @@ carries it at `/app/seed/topics.yaml`, which is what `SEED_PATH` points at.
 To capture the live configuration, go the other way:
 
 ```sh
-kubectl exec -n newsbrief deploy/newsbrief-web -- \
-  python -m newsbrief export-topics > seed/topics.yaml
+kubectl exec -n spanreed deploy/spanreed-web -- \
+  python -m spanreed export-topics > seed/topics.yaml
 ```
 
 That writes YAML to stdout, with its logs on stderr so the redirect stays

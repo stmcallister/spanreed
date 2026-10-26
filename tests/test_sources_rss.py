@@ -9,8 +9,8 @@ import pytest
 import respx
 from pydantic import ValidationError
 
-from newsbrief.sources.base import NotModifiedError
-from newsbrief.sources.rss import RssAdapter, RssConfig
+from spanreed.sources.base import NotModifiedError
+from spanreed.sources.rss import RssAdapter, RssConfig
 from tests.conftest import fixture_bytes
 
 FEED_URL = "https://arstechnica.com/feed/"
@@ -153,7 +153,7 @@ def test_an_http_error_propagates_for_the_collector_to_record(client: httpx.Clie
 
 
 def test_fetch_rejects_the_wrong_config_type(client: httpx.Client) -> None:
-    from newsbrief.sources.google_news import GoogleNewsConfig
+    from spanreed.sources.google_news import GoogleNewsConfig
 
     with pytest.raises(TypeError):
         RssAdapter(client).fetch(GoogleNewsConfig(query="anything"), ANCIENT)

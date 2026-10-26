@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from newsbrief.compose import write
-from newsbrief.compose.filter import Scored
+from spanreed.compose import write
+from spanreed.compose.filter import Scored
 from tests.conftest import StubLlm, make_topic
 from tests.test_cluster import make_item
 

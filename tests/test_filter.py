@@ -6,8 +6,8 @@ import sqlite3
 
 import pytest
 
-from newsbrief.compose import filter as relevance
-from newsbrief.models import Cluster, Item
+from spanreed.compose import filter as relevance
+from spanreed.models import Cluster, Item
 from tests.conftest import StubLlm, add_source, add_topic, make_topic
 from tests.test_cluster import make_item
 
