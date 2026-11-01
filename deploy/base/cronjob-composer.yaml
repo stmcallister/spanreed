@@ -38,7 +38,7 @@ spec:
             fsGroup: 1000
           containers:
             - name: compose
-              image: ghcr.io/stmcallister/spanreed:latest
+              image: docker.io/stmcallisterbridge4/spanreed:latest
               imagePullPolicy: IfNotPresent
               command: ["python", "-m", "spanreed"]
               args: ["compose"]

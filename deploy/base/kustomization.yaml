@@ -20,5 +20,5 @@ labels:
       app.kubernetes.io/managed-by: kustomize
 
 images:
-  - name: ghcr.io/stmcallister/spanreed
+  - name: docker.io/stmcallisterbridge4/spanreed
     newTag: latest

@@ -12,7 +12,7 @@ resources:
   - ../../base
 
 images:
-  - name: ghcr.io/stmcallister/spanreed
+  - name: docker.io/stmcallisterbridge4/spanreed
     newTag: v0.1.0
 
 patches:

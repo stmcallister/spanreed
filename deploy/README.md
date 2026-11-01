@@ -77,9 +77,19 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
-GHCR creates a new package as private, even from a public repository. After
-the first push, set the package to public in its GitHub settings, or k3s will
-fail to pull it with nothing in the manifests to authenticate.
+The image lives on Docker Hub at `docker.io/stmcallisterbridge4/spanreed`, and
+it is public, so the cluster pulls it with no credentials. The workflow logs in
+with two repository secrets:
+
+| Secret | What it is |
+|---|---|
+| `DOCKERHUB_USERNAME` | `stmcallisterbridge4` |
+| `DOCKERHUB_TOKEN` | A Docker Hub access token with Read & Write scope, not the account password |
+
+Docker Hub creates the repository on the first push, using the account's
+default privacy setting. If that default is private, change the repository to
+public after the first push, or k3s will fail to pull it with nothing in the
+manifests to authenticate.
 
 Then bump `newTag` in `overlays/kholinar/kustomization.yaml`. That tag is the
 deployed version, and `latest` in `base` is only a placeholder for anyone

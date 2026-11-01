@@ -1,6 +1,7 @@
 # Checks every push and pull request. A v* tag also builds the image and
-# pushes it to GHCR under that exact tag, which is what the overlay's newTag
-# names.
+# pushes it to Docker Hub under that exact tag, which is what the overlay's
+# newTag names. Logging in needs the DOCKERHUB_USERNAME and DOCKERHUB_TOKEN
+# repository secrets.
 #
 # The image is built for linux/amd64 only, because that is what kholinar runs.
 # There is no lock file, so the checks here run against the same freshly
@@ -36,23 +37,19 @@ jobs:
     needs: check
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
       - uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - uses: docker/build-push-action@v6
         with:
           context: .
           platforms: linux/amd64
           push: true
-          tags: ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+          tags: docker.io/stmcallisterbridge4/spanreed:${{ github.ref_name }}
           labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
