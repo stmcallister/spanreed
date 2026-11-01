@@ -21,7 +21,7 @@ import feedparser
 import httpx
 import structlog
 from pydantic import BaseModel, ConfigDict
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser
 
 from spanreed.config import Settings
 from spanreed.models import RawItem
@@ -101,7 +101,7 @@ def strip_html(value: str | None) -> str | None:
     text = value
     if "<" in text:
         try:
-            text = HTMLParser(text).text(separator=" ")
+            text = LexborHTMLParser(text).text(separator=" ")
         except Exception:
             log.debug("could not parse summary markup, using it verbatim", exc_info=True)
             text = value

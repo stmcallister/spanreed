@@ -16,7 +16,7 @@ from collections.abc import Sequence
 
 import httpx
 import structlog
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser
 
 from spanreed.models import Item
 
@@ -89,7 +89,7 @@ def extract_text(html: str) -> str | None:
     still yields the paragraphs that arrived.
     """
     try:
-        tree = HTMLParser(html)
+        tree = LexborHTMLParser(html)
     except Exception:
         log.debug("could not parse article markup", exc_info=True)
         return None

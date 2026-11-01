@@ -18,7 +18,7 @@ from urllib.parse import urljoin, urlsplit, urlunsplit
 
 import httpx
 import structlog
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser
 
 from spanreed.sources.base import parse_feed
 
@@ -94,7 +94,7 @@ def _get(client: httpx.Client, url: str) -> httpx.Response | None:
 def declared_feeds(html: str, base_url: str) -> list[str]:
     """Feed URLs the document head declares. The correct method, when it works."""
     try:
-        tree = HTMLParser(html)
+        tree = LexborHTMLParser(html)
     except Exception:
         log.debug("could not parse the page markup", url=base_url, exc_info=True)
         return []

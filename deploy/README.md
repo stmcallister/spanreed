@@ -68,10 +68,18 @@ kubectl label node kholinar spanreed.stmcallister.dev/data-node=true
 
 ### 3. The image
 
+GitHub Actions builds it. Push a tag and `.github/workflows/image.yaml` runs
+the checks, then builds for `linux/amd64` and pushes the image under that exact
+tag:
+
 ```sh
-docker build -t ghcr.io/stmcallister/spanreed:v0.1.0 .
-docker push ghcr.io/stmcallister/spanreed:v0.1.0
+git tag v0.1.0
+git push origin v0.1.0
 ```
+
+GHCR creates a new package as private, even from a public repository. After
+the first push, set the package to public in its GitHub settings, or k3s will
+fail to pull it with nothing in the manifests to authenticate.
 
 Then bump `newTag` in `overlays/kholinar/kustomization.yaml`. That tag is the
 deployed version, and `latest` in `base` is only a placeholder for anyone
