@@ -9,76 +9,98 @@
 #   kubectl exec deploy/spanreed-web -n spanreed -- \
 #     python -m spanreed export-topics > seed/topics.yaml
 #
-# Replace these with your own. They are here to show the shape and to make the
-# relevance hint concrete, because that field is the most important input in
-# the application.
 
+# Exported by `spanreed export-topics`.
+# The database is the source of truth. This is a copy of it.
 topics:
-  - name: Seattle Sounders
-    kind: team
-    priority: 70
-    max_items: 4
-    relevance_hint: |
-      Match results, transfers, injuries, lineup news, and manager decisions
-      for the first team. Also MLS league news that directly affects the club,
-      such as roster rules or playoff seeding.
+- name: AI Security
+  slug: ai-security
+  kind: tech
+  relevance_hint: Industry news, announcements, CVEs, tools
+  max_items: 3
+  priority: 50
+  sources:
+  - type: google_news
+    config:
+      query: '"AI security" OR "LLM security" OR "prompt injection" -jobs -hiring'
+      window: 1d
+- name: Kubernetes
+  slug: kubernetes
+  kind: tech
+  relevance_hint: |-
+    Kubernetes releases and CVEs, and news about the ecosystem projects this
+    homelab actually runs: k3s, ArgoCD, Traefik, and local-path storage.
 
-      Not academy or reserve results. Not ticketing, merchandise, or stadium
-      catering announcements. Nothing about unrelated businesses that happen to
-      share the name Sounders.
-    sources:
-      - type: espn
-        config:
-          sport: soccer
-          league: usa.1
-          team_id: "9726"
-      - type: google_news
-        config:
-          query: '"Seattle Sounders" -tickets -merchandise'
-          window: 1d
-      - type: reddit
-        config:
-          subreddit: SoundersFC
-          listing: top
-          window: day
+    Not vendor press releases, not managed platform marketing, and not
+    conference announcements.
+  max_items: 3
+  priority: 50
+  sources:
+  - type: google_news
+    config:
+      query: Kubernetes OR k3s OR ArgoCD -jobs -hiring
+      window: 1d
+  - type: rss
+    config:
+      url: https://kubernetes.io/feed.xml
+- name: Midlakes United
+  slug: midlakes-united
+  kind: team
+  relevance_hint: Transfers, injuries, schedule, player signings, game reports, club news.
+  max_items: 3
+  priority: 50
+  sources:
+  - type: google_news
+    config:
+      query: '"Midlakes United"'
+      window: 1d
+- name: Rust
+  slug: rust
+  kind: tech
+  relevance_hint: |-
+    Releases of the Rust language, compiler, and toolchain. Notable crates,
+    accepted RFCs, and significant work on borrow checking, async, or build
+    times. Security advisories for the standard library or widely used
+    crates.
 
-  - name: Rust
-    kind: tech
-    priority: 60
-    max_items: 4
-    relevance_hint: |
-      Releases of the Rust language, compiler, and toolchain. Notable crates,
-      accepted RFCs, and significant work on borrow checking, async, or build
-      times. Security advisories for the standard library or widely used
-      crates.
+    Not cryptocurrency. Not the video game called Rust. Not metal corrosion.
+    Not beginner tutorials or opinion pieces about whether to learn it.
+  max_items: 4
+  priority: 60
+  sources:
+  - type: reddit
+    config:
+      listing: top
+      subreddit: rust
+      window: day
+  - type: rss
+    config:
+      url: https://blog.rust-lang.org/feed.xml
+- name: Seattle Sounders
+  slug: seattle-sounders
+  kind: team
+  relevance_hint: |-
+    Match results, transfers, injuries, lineup news, and manager decisions
+    for the first team. Also MLS league news that directly affects the club,
+    such as roster rules or playoff seeding.
 
-      Not cryptocurrency. Not the video game called Rust. Not metal corrosion.
-      Not beginner tutorials or opinion pieces about whether to learn it.
-    sources:
-      - type: rss
-        config:
-          url: https://blog.rust-lang.org/feed.xml
-      - type: reddit
-        config:
-          subreddit: rust
-          listing: top
-          window: day
-
-  - name: Kubernetes
-    kind: tech
-    priority: 50
-    max_items: 3
-    relevance_hint: |
-      Kubernetes releases and CVEs, and news about the ecosystem projects this
-      homelab actually runs: k3s, ArgoCD, Traefik, and local-path storage.
-
-      Not vendor press releases, not managed platform marketing, and not
-      conference announcements.
-    sources:
-      - type: rss
-        config:
-          url: https://kubernetes.io/feed.xml
-      - type: google_news
-        config:
-          query: Kubernetes OR k3s OR ArgoCD -jobs -hiring
-          window: 1d
+    Not academy or reserve results. Not ticketing, merchandise, or stadium
+    catering announcements. Nothing about unrelated businesses that happen to
+    share the name Sounders.
+  max_items: 4
+  priority: 70
+  sources:
+  - type: espn
+    config:
+      league: usa.1
+      sport: soccer
+      team_id: '9726'
+  - type: google_news
+    config:
+      query: '"Seattle Sounders" -tickets -merchandise'
+      window: 1d
+  - type: reddit
+    config:
+      listing: top
+      subreddit: SoundersFC
+      window: day
